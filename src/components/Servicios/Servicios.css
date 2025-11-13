@@ -1,0 +1,37 @@
+/* El .container ya lo definimos globalmente en index.css */
+.servicios-section {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  text-align: center;
+}
+
+.servicios-section h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.servicios-grid {
+  display: grid;
+  /* Crea columnas automáticas: 
+     Intenta que midan 300px, pero si no caben, se ajustan */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px; /* Espacio entre las tarjetas */
+  text-align: left;
+}
+
+.servicio-card {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.servicio-card:hover {
+  transform: translateY(-5px); /* Pequeño efecto al pasar el mouse */
+}
+
+.servicio-card h3 {
+  margin-top: 0;
+  color: #3498db; /* Color de acento */
+}

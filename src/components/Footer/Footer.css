@@ -1,0 +1,16 @@
+.footer-section {
+  background-color: #333; /* Color de fondo oscuro */
+  color: #aaa; /* Color de texto gris claro */
+  padding: 2rem 0;
+  text-align: center;
+  margin-top: 3rem; /* Un margen superior para separarlo del contenido */
+}
+
+.footer-content {
+  padding: 0 2rem; /* Asegura que el padding del .container no se anule */
+}
+
+.footer-content p {
+  margin: 0;
+  font-size: 0.9rem;
+}

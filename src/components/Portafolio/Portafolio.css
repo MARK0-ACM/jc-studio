@@ -1,0 +1,30 @@
+.portafolio-section {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  text-align: center;
+  background-color: #ffffff; /* Fondo blanco para esta sección */
+}
+
+.portafolio-section h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.portafolio-grid {
+  display: grid;
+  /* Usamos auto-fit, con un mínimo de 280px */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px; /* Espacio entre las imágenes */
+}
+
+.portafolio-item img {
+  width: 100%;
+  height: auto;
+  display: block; /* Elimina espacio extra bajo la imagen */
+  border-radius: 8px; /* Bordes redondeados */
+  transition: opacity 0.3s ease;
+}
+
+.portafolio-item img:hover {
+  opacity: 0.8; /* Efecto hover simple */
+}
