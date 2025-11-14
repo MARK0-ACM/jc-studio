@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
-import './CitasForm.css'; // Importamos los estilos
+import axios from 'axios'; // 1. Importar axios
+import { useNavigate } from 'react-router-dom'; // 2. Importar useNavigate
+import './CitasForm.css'; 
 
 const CitasForm = () => {
-  // 1. Estados para cada campo del formulario
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [fecha, setFecha] = useState('');
-  const [servicioId, setServicioId] = useState(''); // Para el <select>
+  const [servicioId, setServicioId] = useState(''); 
   const [error, setError] = useState('');
+  const navigate = useNavigate(); // 3. Inicializar el hook
 
-  // Simulación de servicios que vendrían de la API
+  // Simulación de servicios (¡Importante! deben coincidir con tu DB)
   const serviciosDisponibles = [
-    { id: 1, nombre: 'Servicio 1' },
-    { id: 2, nombre: 'Servicio 2' },
-    { id: 3, nombre: 'Servicio 3' },
+    { id: 1, nombre: 'Servicio de Prueba' }, // Asegúrate que este ID exista
+    // { id: 2, nombre: 'Servicio 2' },
+    // { id: 3, nombre: 'Servicio 3' },
   ];
 
-  // 2. Función que se ejecuta al enviar
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Evita que la página se recargue
+  // 4. Esta será la función de envío (handleSubmit) MODIFICADA
+  const handleSubmit = async (e) => {
+    e.preventDefault(); 
 
     if (!nombre || !email || !fecha || !servicioId) {
       setError('Por favor, completa todos los campos.');
@@ -27,16 +29,32 @@ const CitasForm = () => {
     
     setError('');
     
-    // --- Simulación de envío de API ---
-    console.log('Enviando datos de Cita:', { nombre, email, fecha, servicioId });
-    
-    alert('¡Cita agendada (simulación)! Revisa la consola.');
-    
-    // Limpiar formulario
-    setNombre('');
-    setEmail('');
-    setFecha('');
-    setServicioId('');
+    try {
+      // 5. ¡LA LLAMADA A LA API!
+      const response = await axios.post('http://localhost:4000/api/citas', {
+        nombre: nombre,
+        email: email,
+        fecha: fecha,
+        servicioId: parseInt(servicioId) // Aseguramos que sea un número
+      });
+
+      // 6. Si la cita se agenda con éxito
+      console.log('Cita agendada:', response.data);
+      alert('¡Tu cita ha sido agendada exitosamente!');
+      
+      // 7. Redirigimos a la página de inicio
+      navigate('/'); 
+
+    } catch (err) {
+      // 8. Si falla la llamada
+      console.error('Error al agendar la cita:', err.response);
+      
+      if (err.response && err.response.data.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Error al conectar con el servidor.');
+      }
+    }
   };
 
   return (
@@ -70,7 +88,7 @@ const CitasForm = () => {
         <div className="form-group">
           <label htmlFor="fecha">Fecha y Hora:</label>
           <input 
-            type="datetime-local" // Input especial para fecha y hora
+            type="datetime-local" 
             id="fecha"
             value={fecha}
             onChange={(e) => setFecha(e.target.value)}
