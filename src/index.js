@@ -1,16 +1,14 @@
-// src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+// import { BrowserRouter } from 'react-router-dom'; // <-- BÓRRALO SI ESTÁ
+import './index.css'; // (O cualquier CSS que tengas)
 import App from './App';
-import { BrowserRouter } from 'react-router-dom'; // 1. Importar
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    {/* 2. Envolver <App /> con <BrowserRouter> */}
-    <BrowserRouter>
+    {/* <BrowserRouter>  <--- BÓRRALO SI ESTÁ */}
       <App />
-    </BrowserRouter>
+    {/* </BrowserRouter> <--- BÓRRALO SI ESTÁ */}
   </React.StrictMode>
 );
