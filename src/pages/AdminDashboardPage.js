@@ -1,12 +1,26 @@
 import React from 'react';
+import ServicesManager from '../components/Admin/ServicesManager';
+import PortfolioManager from '../components/Admin/PortfolioManager'; // 1. Importar
+// import './AdminDashboardPage.css'; 
 
 const AdminDashboardPage = () => {
   return (
-    <div className="container">
+    <div className="container" style={{ padding: '2rem 0' }}>
       <h2>Panel de Administración</h2>
-      <p>¡Bienvenido, Admin! Aquí podrás gestionar el sitio.</p>
+      <p>Bienvenido. Aquí puedes gestionar tu negocio.</p>
       
-      {/* Aquí irán los módulos para gestionar Citas, Servicios y Portafolio */}
+      <hr style={{ margin: '20px 0' }} />
+
+      {/* Módulo de Servicios */}
+      <section style={{ marginBottom: '40px' }}>
+        <ServicesManager />
+      </section>
+
+      {/* Módulo de Portafolio */}
+      <section>
+        <PortfolioManager /> {/* 2. Usar */}
+      </section>
+
     </div>
   );
 };

@@ -1,20 +1,13 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // 1. Importar useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = () => {
-  // 2. Inicializar el hook de navegación
   const navigate = useNavigate();
-
-  // 3. Revisamos si el token existe CADA VEZ que el Navbar se renderiza
   const token = localStorage.getItem('token');
 
-  // 4. Función para manejar el "Cerrar Sesión"
   const handleLogout = () => {
-    // Borramos el token del navegador
     localStorage.removeItem('token');
-    
-    // Redirigimos al usuario a la página de login
     navigate('/login');
   };
 
@@ -23,26 +16,32 @@ const Navbar = () => {
       <div className="navbar-logo">
         <Link to="/">JC Studio</Link>
       </div>
+      
       <ul className="navbar-links">
+        {/* Enlaces Informativos */}
         <li><Link to="/">Inicio</Link></li>
-        <li><Link to="/citas">Agendar Cita</Link></li>
+        <li><Link to="/servicios">Servicios</Link></li>
+        <li><Link to="/galeria">Galería</Link></li>
+        
+        {/* Enlace de Acción (CTA) - Le pondremos una clase especial */}
+        <li>
+            <Link to="/citas" className="nav-cta">Agendar Cita</Link>
+        </li>
 
-        {/* 5. LÓGICA CONDICIONAL */}
+        {/* Lógica de Admin */}
         {token ? (
-          // --- Si el usuario SÍ está logueado ---
           <>
-            <li><Link to="/admin">Admin</Link></li>
+            <li className="admin-separator">|</li> {/* Separador visual */}
+            <li><Link to="/admin" className="admin-link">Panel Admin</Link></li>
             <li>
               <button onClick={handleLogout} className="btn-logout">
-                Cerrar Sesión
+                Salir
               </button>
             </li>
           </>
         ) : (
-          // --- Si el usuario NO está logueado ---
-          <li><Link to="/login">Login</Link></li>
+          <li><Link to="/login" className="login-link">Admin</Link></li>
         )}
-        
       </ul>
     </nav>
   );

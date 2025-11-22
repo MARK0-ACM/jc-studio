@@ -60,3 +60,65 @@
   background: white;
   color: #333; /* Cambia a color del fondo del navbar */
 }
+/* ... tus estilos base de .navbar ... */
+
+.navbar-links {
+  display: flex;
+  align-items: center; /* Alinea todo verticalmente al centro */
+  gap: 20px;
+  list-style: none;
+}
+
+.navbar-links a {
+  text-decoration: none;
+  color: white; /* O el color que uses */
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.navbar-links a:hover {
+  color: #d4af37; /* Color dorado al pasar el mouse */
+}
+
+/* --- BOTÓN DESTACADO (Call to Action) --- */
+/* Hacemos que "Agendar Cita" parezca un botón aunque sea un link */
+.nav-cta {
+  background-color: #d4af37;
+  color: white !important; /* Forzamos blanco */
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-weight: bold !important;
+  transition: background 0.3s;
+}
+
+.nav-cta:hover {
+  background-color: #b5952f; /* Un dorado más oscuro al hover */
+}
+
+/* Separador pequeño para el admin */
+.admin-separator {
+  color: #666;
+  font-size: 1.2rem;
+}
+
+/* Botón de salir (ajuste visual) */
+.btn-logout {
+  background: transparent;
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-logout:hover {
+  background: #ff6b6b;
+  color: white;
+}
+
+/* Link discreto para el Login (para que no distraiga a los clientes) */
+.login-link {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}

@@ -1,0 +1,59 @@
+.services-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+  
+  .services-header {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+  
+  .services-header h1 { font-size: 2.5rem; color: #333; }
+  .services-header p { color: #666; font-size: 1.2rem; }
+  
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+  }
+  
+  .service-card-full {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
+  }
+  
+  .service-card-full:hover { transform: translateY(-5px); }
+  
+  .service-info h3 { color: #d4af37; margin-bottom: 10px; font-size: 1.5rem; }
+  .service-desc { color: #555; line-height: 1.5; margin-bottom: 20px; }
+  
+  .service-meta {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+  }
+  
+  .btn-book {
+    display: block;
+    text-align: center;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+  
+  .btn-book:hover { background-color: #555; }
