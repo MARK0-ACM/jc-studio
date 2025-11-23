@@ -5,6 +5,8 @@ import Footer from './components/Footer/Footer';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import CitasPage from './pages/CitasPage';
+import ServicesPage from './pages/ServicesPage';
+import GalleryPage from './pages/GalleryPage';
 
 // 1. Importar los nuevos componentes
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -20,6 +22,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/citas" element={<CitasPage />} />
+          <Route path="/servicios" element={<ServicesPage />} />
+          <Route path="/galeria" element={<GalleryPage />} />
 
           {/* --- Rutas Privadas (Admin) --- */}
           {/* 2. Esta es la nueva lógica */}

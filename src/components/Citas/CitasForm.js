@@ -58,10 +58,33 @@ const CitasForm = () => {
 
     } catch (err) {
       console.error('Error al agendar:', err.response);
-      if (err.response && err.response.data.error) {
-        setError(err.response.data.error);
-      } else {
-        setError('Error al conectar con el servidor.');
+      
+      // Manejo específico de errores del backend
+      if (err.response) {
+        // Error 409 Conflict - Hora ocupada
+        if (err.response.status === 409) {
+          setError(err.response.data.error || 'Esta hora ya está ocupada. Por favor, selecciona otra fecha y hora.');
+        }
+        // Error 400 Bad Request - Datos inválidos
+        else if (err.response.status === 400) {
+          setError(err.response.data.error || 'Los datos proporcionados no son válidos. Por favor, verifica la información.');
+        }
+        // Otros errores con mensaje del backend
+        else if (err.response.data && err.response.data.error) {
+          setError(err.response.data.error);
+        }
+        // Error sin mensaje específico
+        else {
+          setError(`Error del servidor (${err.response.status}). Por favor, intenta nuevamente.`);
+        }
+      } 
+      // Error de conexión
+      else if (err.request) {
+        setError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+      }
+      // Otro tipo de error
+      else {
+        setError('Ocurrió un error inesperado. Por favor, intenta nuevamente.');
       }
     }
   };
