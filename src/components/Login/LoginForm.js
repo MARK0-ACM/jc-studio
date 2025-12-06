@@ -28,18 +28,29 @@ const LoginForm = () => {
         password: password
       });
 
-      // 6. Si el login es Exitoso (recibimos el token)
-      const { token } = response.data;
+      // 6. Si el login es Exitoso (recibimos el token y datos del usuario)
+      const { token, user } = response.data;
       
-      // Guardamos el token en el navegador para futuras peticiones
-      localStorage.setItem('token', token); 
+      // Guardamos el token y los datos del usuario en el navegador
+      localStorage.setItem('token', token);
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
       
-      console.log('¡Login exitoso! Token:', token);
-      alert('¡Login exitoso!');
+      console.log('¡Login exitoso!', { token, user });
       
-      // 7. Redirigimos al usuario a una futura página de "Admin"
-      // Por ahora, lo mandamos a la página de inicio
-      navigate('/'); 
+      // 7. Redirigir según el rol del usuario
+      const rol = user?.rol || 'cliente';
+      
+      if (rol === 'admin' || rol === 'jefe') {
+        // Si es admin/jefe, redirigir al panel de administración
+        alert(`¡Bienvenido ${user?.nombre || 'Administrador'}!`);
+        navigate('/admin');
+      } else {
+        // Si es cliente, redirigir a "Mis Citas"
+        alert(`¡Bienvenido ${user?.nombre || 'Cliente'}!`);
+        navigate('/mis-citas');
+      }
 
     } catch (err) {
       // 8. Si el login Falla (error 400, 401, 500)

@@ -15,6 +15,14 @@ const CitasManager = () => {
   const [cargando, setCargando] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('todas'); // 'todas', 'pendiente', 'confirmada', 'rechazada'
 
+  // Helper para obtener headers con token (Admin autenticado)
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+  };
+
   // Cargar citas y servicios al iniciar
   useEffect(() => {
     fetchCitas();
@@ -23,7 +31,9 @@ const CitasManager = () => {
 
   const fetchCitas = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/citas');
+      const response = await axios.get('http://localhost:4000/api/citas', {
+        headers: getAuthHeaders()
+      });
       console.log('Citas recibidas del backend:', response.data); // Debug
       if (response.data && response.data.length > 0) {
         console.log('Primera cita completa:', response.data[0]); // Debug - ver estructura
@@ -40,7 +50,9 @@ const CitasManager = () => {
 
   const fetchServicios = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/servicios');
+      const response = await axios.get('http://localhost:4000/api/servicios', {
+        headers: getAuthHeaders()
+      });
       setServicios(response.data);
     } catch (err) {
       console.error('Error al cargar servicios:', err);
@@ -60,6 +72,8 @@ const CitasManager = () => {
       await axios.post('http://localhost:4000/api/citas', {
         ...form,
         servicioId: parseInt(form.servicioId)
+      }, {
+        headers: getAuthHeaders()
       });
       alert('Cita creada exitosamente');
       
@@ -86,7 +100,9 @@ const CitasManager = () => {
     if (!window.confirm('¿Estás seguro de eliminar esta cita?')) return;
 
     try {
-      await axios.delete(`http://localhost:4000/api/citas/${id}`);
+      await axios.delete(`http://localhost:4000/api/citas/${id}`, {
+        headers: getAuthHeaders()
+      });
       fetchCitas();
       alert('Cita eliminada exitosamente');
     } catch (err) {
@@ -95,24 +111,82 @@ const CitasManager = () => {
     }
   };
 
+  // Helper para formatear teléfono a formato WhatsApp (asumiendo México +52)
+  const formatearTelefonoWhatsApp = (telefono) => {
+    if (!telefono) return '';
+    let limpio = String(telefono).replace(/[^0-9]/g, '');
+    if (!limpio) return '';
+    if (!limpio.startsWith('52')) {
+      limpio = '52' + limpio;
+    }
+    return limpio;
+  };
+
   // Funciones para cambiar el estado de la cita
   const handleCambiarEstado = async (id, nuevoEstado) => {
     console.log(`Intentando cambiar estado de cita ${id} a: ${nuevoEstado}`);
+
+    // Buscar la cita seleccionada antes de cambiar el estado (para usar sus datos en WhatsApp)
+    const citaSeleccionada = citas.find(c => c.id === id);
     
     try {
       // Intentar primero con PATCH
       console.log(`Haciendo PATCH a: http://localhost:4000/api/citas/${id}/estado`);
-      const response = await axios.patch(`http://localhost:4000/api/citas/${id}/estado`, {
-        estado: nuevoEstado
-      });
+      const response = await axios.patch(
+        `http://localhost:4000/api/citas/${id}/estado`,
+        { estado: nuevoEstado },
+        { headers: getAuthHeaders() }
+      );
       console.log('Respuesta del servidor:', response.data);
       fetchCitas();
-      const mensaje = nuevoEstado === 'confirmada' 
+      const mensajeBase = nuevoEstado === 'confirmada' 
         ? 'Cita confirmada exitosamente' 
         : nuevoEstado === 'rechazada' 
         ? 'Cita rechazada exitosamente'
         : `Cita actualizada a: ${nuevoEstado}`;
-      alert(mensaje);
+      alert(mensajeBase);
+
+      // Si la cita fue confirmada o rechazada y tenemos teléfono, abrir WhatsApp Web
+      if ((nuevoEstado === 'confirmada' || nuevoEstado === 'rechazada') && citaSeleccionada) {
+        const telefono = citaSeleccionada.cliente_telefono || citaSeleccionada.telefono;
+        const waTelefono = formatearTelefonoWhatsApp(telefono);
+
+        if (waTelefono) {
+          const nombreCliente = citaSeleccionada.cliente_nombre || citaSeleccionada.nombre || 'cliente';
+          const servicioNombre = obtenerNombreServicio(citaSeleccionada);
+          const fechaTexto = formatearFecha(
+            citaSeleccionada.fecha_hora ||
+            citaSeleccionada.fecha || 
+            citaSeleccionada.fecha_cita || 
+            citaSeleccionada.fecha_hora_cita ||
+            citaSeleccionada.fecha_agendada
+          );
+
+          let mensajeWhatsApp;
+          
+          if (nuevoEstado === 'confirmada') {
+            // Mensaje para cita confirmada
+            mensajeWhatsApp =
+              `Hola ${nombreCliente}, tu cita en JC Studio ha sido CONFIRMADA.%0A%0A` +
+              `📅 Fecha y hora: ${fechaTexto}%0A` +
+              `💇 Servicio: ${servicioNombre}%0A` +
+              (citaSeleccionada.precio ? `💰 Precio: $${citaSeleccionada.precio}%0A` : '') +
+              `%0A¡Te esperamos!`;
+          } else if (nuevoEstado === 'rechazada') {
+            // Mensaje para cita rechazada (más empático)
+            mensajeWhatsApp =
+              `Hola ${nombreCliente}, lamentamos informarte que tu cita en JC Studio para el ${fechaTexto} ha sido cancelada.%0A%0A` +
+              `💇 Servicio solicitado: ${servicioNombre}%0A%0A` +
+              `Por favor, contáctanos para reagendar tu cita en otro horario disponible.%0A%0A` +
+              `¡Estamos aquí para ayudarte! 🙏`;
+          }
+
+          const urlWhatsApp = `https://wa.me/${waTelefono}?text=${mensajeWhatsApp}`;
+          window.open(urlWhatsApp, '_blank');
+        } else {
+          console.log('No se encontró un teléfono válido para la cita, no se abrió WhatsApp.');
+        }
+      }
     } catch (err) {
       console.error('Error con PATCH:', err);
       console.error('Detalles del error:', {
@@ -125,9 +199,11 @@ const CitasManager = () => {
       // Si PATCH falla, intentar con PUT en el endpoint de estado
       try {
         console.log(`Intentando PUT a: http://localhost:4000/api/citas/${id}/estado`);
-        const response = await axios.put(`http://localhost:4000/api/citas/${id}/estado`, {
-          estado: nuevoEstado
-        });
+        const response = await axios.put(
+          `http://localhost:4000/api/citas/${id}/estado`,
+          { estado: nuevoEstado },
+          { headers: getAuthHeaders() }
+        );
         console.log('Respuesta del servidor (PUT):', response.data);
         fetchCitas();
         const mensaje = nuevoEstado === 'confirmada' 
@@ -136,6 +212,46 @@ const CitasManager = () => {
           ? 'Cita rechazada exitosamente'
           : `Cita actualizada a: ${nuevoEstado}`;
         alert(mensaje);
+
+        // Si la cita fue confirmada o rechazada y tenemos teléfono, abrir WhatsApp Web (fallback PUT)
+        if ((nuevoEstado === 'confirmada' || nuevoEstado === 'rechazada') && citaSeleccionada) {
+          const telefono = citaSeleccionada.cliente_telefono || citaSeleccionada.telefono;
+          const waTelefono = formatearTelefonoWhatsApp(telefono);
+
+          if (waTelefono) {
+            const nombreCliente = citaSeleccionada.cliente_nombre || citaSeleccionada.nombre || 'cliente';
+            const servicioNombre = obtenerNombreServicio(citaSeleccionada);
+            const fechaTexto = formatearFecha(
+              citaSeleccionada.fecha_hora ||
+              citaSeleccionada.fecha || 
+              citaSeleccionada.fecha_cita || 
+              citaSeleccionada.fecha_hora_cita ||
+              citaSeleccionada.fecha_agendada
+            );
+
+            let mensajeWhatsApp;
+            
+            if (nuevoEstado === 'confirmada') {
+              mensajeWhatsApp =
+                `Hola ${nombreCliente}, tu cita en JC Studio ha sido CONFIRMADA.%0A%0A` +
+                `📅 Fecha y hora: ${fechaTexto}%0A` +
+                `💇 Servicio: ${servicioNombre}%0A` +
+                (citaSeleccionada.precio ? `💰 Precio: $${citaSeleccionada.precio}%0A` : '') +
+                `%0A¡Te esperamos!`;
+            } else if (nuevoEstado === 'rechazada') {
+              mensajeWhatsApp =
+                `Hola ${nombreCliente}, lamentamos informarte que tu cita en JC Studio para el ${fechaTexto} ha sido cancelada.%0A%0A` +
+                `💇 Servicio solicitado: ${servicioNombre}%0A%0A` +
+                `Por favor, contáctanos para reagendar tu cita en otro horario disponible.%0A%0A` +
+                `¡Estamos aquí para ayudarte! 🙏`;
+            }
+
+            const urlWhatsApp = `https://wa.me/${waTelefono}?text=${mensajeWhatsApp}`;
+            window.open(urlWhatsApp, '_blank');
+          } else {
+            console.log('No se encontró un teléfono válido para la cita, no se abrió WhatsApp.');
+          }
+        }
       } catch (err2) {
         console.error('Error con PUT:', err2);
         console.error('Detalles del error PUT:', {
@@ -335,6 +451,11 @@ const CitasManager = () => {
                   </div>
                 </div>
                 <div className="cita-info">
+                  <p><strong>📞 Teléfono:</strong> {
+                    cita.cliente_telefono ||
+                    cita.telefono ||
+                    'No registrado'
+                  }</p>
                   <p><strong>📧 Email:</strong> {
                     cita.cliente_email || 
                     cita.email || 

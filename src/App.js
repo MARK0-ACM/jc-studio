@@ -7,6 +7,8 @@ import LoginPage from './pages/LoginPage';
 import CitasPage from './pages/CitasPage';
 import ServicesPage from './pages/ServicesPage';
 import GalleryPage from './pages/GalleryPage';
+import RegisterPage from './pages/RegisterPage';
+import MisCitasPage from './pages/MisCitasPage';
 
 // 1. Importar los nuevos componentes
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -21,18 +23,17 @@ function App() {
           {/* --- Rutas Públicas --- */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/citas" element={<CitasPage />} />
           <Route path="/servicios" element={<ServicesPage />} />
           <Route path="/galeria" element={<GalleryPage />} />
 
-          {/* --- Rutas Privadas (Admin) --- */}
-          {/* 2. Esta es la nueva lógica */}
+          {/* --- Rutas Privadas (Requieren Autenticación) --- */}
           <Route element={<ProtectedRoute />}>
-            {/* Todas las rutas "hijas" aquí adentro estarán protegidas */}
+            {/* Panel de Administración (Solo Admin/Jefe) */}
             <Route path="/admin" element={<AdminDashboardPage />} />
-            {/* Si tuvieras más rutas de admin, irían aquí: */}
-            {/* <Route path="/admin/servicios" element={<AdminServicios />} /> */}
-            {/* <Route path="/admin/portafolio" element={<AdminPortafolio />} /> */}
+            {/* Mis Citas (Para Clientes) */}
+            <Route path="/mis-citas" element={<MisCitasPage />} />
           </Route>
 
         </Routes>

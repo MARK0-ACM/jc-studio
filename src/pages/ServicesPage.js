@@ -46,7 +46,9 @@ const ServicesPage = () => {
                   <h3>{servicio.nombre}</h3>
                   <p className="service-desc">{servicio.descripcion}</p>
                   <div className="service-meta">
-                    <span className="duration">⏱ {servicio.duracion_min} min</span>
+                    <span className="duration">⏱ {servicio.duracion_min >= 60 
+                      ? `${Math.floor(servicio.duracion_min / 60)} ${Math.floor(servicio.duracion_min / 60) === 1 ? 'hora' : 'horas'}${servicio.duracion_min % 60 > 0 ? ` ${servicio.duracion_min % 60} min` : ''}`
+                      : `${servicio.duracion_min} min`}</span>
                     <span className="price">${servicio.precio}</span>
                   </div>
                 </div>

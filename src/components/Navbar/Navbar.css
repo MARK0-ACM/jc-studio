@@ -2,26 +2,38 @@
   background-color: #ffffff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 1rem 2rem;
-  /* position: sticky; top: 0; z-index: 1000; (Descomenta esto si quieres que se quede pegado arriba) */
 }
 
-/* src/components/Navbar/Navbar.css */
-
+/* Navbar Moderno */
 .navbar {
-  background-color: #333; /* Color de fondo */
-  color: white; /* Color del texto */
-  padding: 1rem 2rem; /* Espaciado interno */
-  display: flex; /* Para alinear elementos horizontalmente */
-  justify-content: space-between; /* Espacia el logo y los links */
-  align-items: center; /* Centra verticalmente */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  color: white;
+  padding: 1.2rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
 }
 
 .navbar-logo a {
   color: white;
   text-decoration: none;
-  font-size: 1.5rem; /* Tamaño del logo */
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.3s ease;
+}
+
+.navbar-logo a:hover {
+  transform: scale(1.05);
 }
 
 .navbar-links {
@@ -36,11 +48,26 @@
   color: white;
   text-decoration: none;
   font-size: 1rem;
-  transition: color 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .navbar-links li a:hover {
   color: #f0f0f0; /* Color al pasar el ratón */
+}
+
+/* Indicador de página actual - Recuadro lila claro */
+.navbar-links li a.active {
+  background-color: #a78bfa; /* Lila claro */
+  color: white !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+}
+
+.navbar-links li a.active:hover {
+  background-color: #8b5cf6; /* Lila un poco más oscuro */
 }
 
 /* Estilo para el botón de logout (ya lo tenías, solo por si acaso) */
@@ -76,14 +103,14 @@
   transition: color 0.3s;
 }
 
-.navbar-links a:hover {
-  color: #d4af37; /* Color dorado al pasar el mouse */
+.navbar-links a:hover:not(.active) {
+  color: #c4b5fd; /* Lila claro al pasar el mouse (si no está activo) */
 }
 
 /* --- BOTÓN DESTACADO (Call to Action) --- */
 /* Hacemos que "Agendar Cita" parezca un botón aunque sea un link */
 .nav-cta {
-  background-color: #d4af37;
+  background-color: #a78bfa; /* Lila claro */
   color: white !important; /* Forzamos blanco */
   padding: 8px 16px;
   border-radius: 5px;
@@ -92,7 +119,12 @@
 }
 
 .nav-cta:hover {
-  background-color: #b5952f; /* Un dorado más oscuro al hover */
+  background-color: #8b5cf6; /* Lila un poco más oscuro al hover */
+}
+
+.nav-cta.active {
+  background-color: #7c3aed; /* Lila más intenso cuando está activo */
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
 }
 
 /* Separador pequeño para el admin */
@@ -121,4 +153,16 @@
 .login-link {
   font-size: 0.9rem;
   opacity: 0.7;
+}
+
+.login-link.active {
+  opacity: 1;
+  background-color: #a78bfa; /* Lila claro cuando está activo */
+  color: white !important;
+}
+
+/* Admin link también con indicador */
+.admin-link.active {
+  background-color: #a78bfa; /* Lila claro cuando está activo */
+  color: white !important;
 }
