@@ -381,6 +381,7 @@ const CitasForm = () => {
     <div className="citas-form-container">
       <form onSubmit={handleSubmit} className="citas-form">
         <h2>Agendar una Cita</h2>
+        <div className="citas-form-divider"></div>
         
         <div className="form-group">
           <label htmlFor="nombre">Nombre Completo:</label>
@@ -398,7 +399,7 @@ const CitasForm = () => {
             value={email} onChange={(e) => setEmail(e.target.value)}
             required
             readOnly={!!localStorage.getItem('token')}
-            style={localStorage.getItem('token') ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+            style={localStorage.getItem('token') ? { backgroundColor: 'rgba(255,255,255,0.04)', cursor: 'not-allowed' } : {}}
           />
           {localStorage.getItem('token') && (
             <small style={{ color: '#666', fontSize: '0.85rem', display: 'block', marginTop: '5px' }}>

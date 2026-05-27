@@ -1,65 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import './ServicesPage.css'; // Asegúrate de tener el CSS
+import './ServicesPage.css';
 
 const ServicesPage = () => {
   const [servicios, setServicios] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // 1. Aquí es donde pedimos los datos al Backend
   useEffect(() => {
     const fetchServicios = async () => {
       try {
         const response = await axios.get('http://localhost:4000/api/servicios');
         setServicios(response.data);
-        setCargando(false);
       } catch (error) {
         console.error('Error al cargar servicios', error);
+      } finally {
         setCargando(false);
       }
     };
     fetchServicios();
   }, []);
 
+  const formatDuracion = (min) => {
+    if (min >= 60) {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${h} ${h === 1 ? 'hora' : 'horas'}${m > 0 ? ` ${m} min` : ''}`;
+    }
+    return `${min} min`;
+  };
+
   return (
     <div className="services-page">
+
+      {/* Header */}
       <header className="services-header">
+        <div className="services-eyebrow">Lo que ofrecemos</div>
         <h1>Nuestros Servicios</h1>
         <p>Calidad y estilo en cada detalle.</p>
       </header>
 
-      {/* 2. Si está cargando, mostramos un mensaje */}
       {cargando ? (
         <p className="loading">Cargando catálogo...</p>
       ) : (
-        /* 3. Si ya tenemos datos, dibujamos la cuadrícula */
         <div className="services-grid">
-          
-          {/* AQUÍ OCURRE LA MAGIA: Si la lista está vacía, avisa. Si no, dibuja las tarjetas */}
           {servicios.length === 0 ? (
-            <p>No hay servicios disponibles por el momento.</p>
+            <p style={{ color: 'var(--jc-muted)', gridColumn: '1/-1', textAlign: 'center', padding: '60px' }}>
+              No hay servicios disponibles por el momento.
+            </p>
           ) : (
-            servicios.map((servicio) => (
-              <div key={servicio.id} className="service-card-full">
+            servicios.map((servicio, index) => (
+              <div
+                key={servicio.id}
+                className="service-card-full"
+                data-index={String(index + 1).padStart(2, '0')}
+              >
                 <div className="service-info">
                   <h3>{servicio.nombre}</h3>
                   <p className="service-desc">{servicio.descripcion}</p>
                   <div className="service-meta">
-                    <span className="duration">⏱ {servicio.duracion_min >= 60 
-                      ? `${Math.floor(servicio.duracion_min / 60)} ${Math.floor(servicio.duracion_min / 60) === 1 ? 'hora' : 'horas'}${servicio.duracion_min % 60 > 0 ? ` ${servicio.duracion_min % 60} min` : ''}`
-                      : `${servicio.duracion_min} min`}</span>
+                    <span className="duration">⏱ {formatDuracion(servicio.duracion_min)}</span>
                     <span className="price">${servicio.precio}</span>
                   </div>
                 </div>
                 <div className="service-action">
-                  {/* Este botón lleva directo a agendar ESE servicio */}
                   <Link to="/citas" className="btn-book">Agendar este servicio</Link>
                 </div>
               </div>
             ))
           )}
-          
         </div>
       )}
     </div>

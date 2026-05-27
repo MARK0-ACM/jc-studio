@@ -1,154 +1,274 @@
-/* Formulario de Citas - Diseño Moderno */
+/* =============================================
+   CITAS FORM — JC Studio · Negro & Dorado
+   ============================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --jc-black:  #0a0a0a;
+  --jc-dark:   #111111;
+  --jc-dark2:  #161616;
+  --jc-gold:   #c9a84c;
+  --jc-gold2:  #e8c96a;
+  --jc-white:  #f5f0e8;
+  --jc-muted:  rgba(245,240,232,0.5);
+  --jc-border: rgba(201,168,76,0.18);
+}
+
+/* ──────────────────────────────────────────
+   FIX 1: Los lados blancos
+   El contenedor debe cubrir TODO el ancho
+   ────────────────────────────────────────── */
 .citas-form-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 60px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a78bfa 100%);
-  min-height: calc(100vh - 200px);
-}
-
-.citas-form {
-  background: #ffffff;
-  padding: 3.5rem;
-  border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  align-items: flex-start;
+  padding: 60px 20px 80px;
+  background: var(--jc-black);
+  min-height: 100vh;
   width: 100%;
-  max-width: 520px;
+  box-sizing: border-box;
   position: relative;
   overflow: hidden;
 }
 
+/* Halo dorado de fondo */
+.citas-form-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(201,168,76,0.1) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 90% 90%, rgba(201,168,76,0.05) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* ── Card del formulario ── */
+.citas-form {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--jc-dark);
+  border: 1px solid var(--jc-border);
+  padding: 48px 44px;
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+/* Línea dorada superior */
 .citas-form::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #a78bfa 100%);
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--jc-gold), var(--jc-gold2), var(--jc-gold), transparent);
 }
 
+/* ── Encabezado ── */
 .citas-form h2 {
+  font-family: 'Cormorant Garamond', serif;
   text-align: center;
-  margin-top: 0;
-  margin-bottom: 2rem;
-  color: #2d3748;
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 700;
-  letter-spacing: -1px;
+  color: var(--jc-white);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
 }
 
+.citas-form h2::before {
+  content: 'Reserva tu cita';
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--jc-gold);
+  margin-bottom: 10px;
+}
+
+.citas-form-divider {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--jc-gold), transparent);
+  margin: 0 auto 32px;
+}
+
+/* ── Grupos de campo ── */
 .form-group {
-  margin-bottom: 1.8rem;
+  margin-bottom: 22px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.7rem;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #2d3748;
-  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.6);
 }
 
+/* ──────────────────────────────────────────
+   FIX 2: Texto del email invisible
+   y FIX 3: Select de hora con triángulos
+   ────────────────────────────────────────── */
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 14px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  box-sizing: border-box; 
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: #f8f9fa;
+  padding: 13px 16px;
+  background: var(--jc-dark2);
+  border: 1.5px solid rgba(201,168,76,0.15);
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.93rem;
+  font-weight: 400;
+  color: var(--jc-white);        /* texto siempre blanco cálido */
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  /* FIX 3: evita el highlight amarillo del sistema */
+  -webkit-text-fill-color: var(--jc-white);
+  caret-color: var(--jc-gold);
 }
 
-.form-group input:focus,
+/* FIX 2: email readonly — texto visible aunque esté bloqueado */
+.form-group input:read-only {
+  background: rgba(255,255,255,0.04);
+  color: var(--jc-muted);
+  -webkit-text-fill-color: rgba(245,240,232,0.5); /* visible pero apagado */
+  cursor: not-allowed;
+  border-color: rgba(201,168,76,0.08);
+}
+
+/* FIX 3: Select al ser seleccionado / activo — sin amarillo del SO */
+.form-group select {
+  background-color: var(--jc-dark2);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23c9a84c' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 10px;
+  padding-right: 40px;
+  cursor: pointer;
+  /* Elimina el highlight azul/amarillo del navegador al seleccionar */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* FIX 3: Quitar el highlight de selección del sistema operativo */
 .form-group select:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: var(--jc-gold);
+  background-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  /* Esto elimina el fondo amarillo/azul al hacer focus en Safari/Chrome */
+  -webkit-appearance: none;
 }
 
-/* Estilos específicos para inputs de fecha y hora */
+/* Opciones del select */
+.form-group select option {
+  background-color: #1a1a1a;
+  color: var(--jc-white);
+  padding: 8px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--jc-gold);
+  background: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  -webkit-text-fill-color: var(--jc-white);
+}
+
+/* Select deshabilitado */
+.form-group select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Fecha */
 .form-group input[type="date"] {
   cursor: pointer;
+  color-scheme: dark;
 }
 
 .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(2) hue-rotate(5deg);
   cursor: pointer;
-  opacity: 0.6;
-  filter: invert(0.5);
+  opacity: 0.7;
 }
-
 .form-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
 
-/* Estilos para el selector de hora personalizado */
+/* Select de hora — misma flecha dorada */
 .form-group select.time-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-  background-size: 12px;
-  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23c9a84c' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
 }
 
-.form-group select.time-select:focus {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-}
-
-.form-group input:read-only {
-  background: #f0f0f0;
-  cursor: not-allowed;
-  color: #718096;
-}
-
+/* Hint */
 .form-group small {
   display: block;
-  margin-top: 6px;
-  color: #718096;
-  font-size: 0.85rem;
+  margin-top: 7px;
+  font-size: 0.75rem;
+  color: rgba(245,240,232,0.35) !important;
+  line-height: 1.5;
 }
 
+/* Error */
+.error-message {
+  font-size: 0.83rem;
+  color: #f5a5a5;
+  text-align: center;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: rgba(224,82,82,0.1);
+  border: 1px solid rgba(224,82,82,0.25);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+/* Botón */
 .btn-submit {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--jc-gold) 0%, var(--jc-gold2) 100%);
+  color: var(--jc-black);
+  -webkit-text-fill-color: var(--jc-black);
   border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  border-radius: 50px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
   font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-  margin-top: 10px;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow: 0 6px 28px rgba(201,168,76,0.28);
+  margin-top: 8px;
 }
 
-.btn-submit:hover {
+.btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: 0 10px 36px rgba(201,168,76,0.42);
+  opacity: 0.93;
 }
 
 .btn-submit:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
 }
 
-.error-message {
-  color: #e53e3e;
-  font-size: 0.95rem;
-  text-align: center;
-  margin-bottom: 1.2rem;
-  padding: 12px;
-  background: #fed7d7;
-  border-radius: 8px;
-  border-left: 4px solid #e53e3e;
+/* Responsive */
+@media (max-width: 560px) {
+  .citas-form {
+    padding: 36px 24px;
+    border-radius: 16px;
+  }
+  .citas-form h2 {
+    font-size: 1.7rem;
+  }
 }

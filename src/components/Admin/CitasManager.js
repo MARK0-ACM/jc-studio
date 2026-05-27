@@ -15,18 +15,23 @@ const CitasManager = () => {
   const [cargando, setCargando] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('todas'); // 'todas', 'pendiente', 'confirmada', 'rechazada'
 
+  // Filtros
+  const [busqueda, setBusqueda] = useState('');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
+  const [ordenFecha, setOrdenFecha] = useState('desc'); // 'asc' | 'desc'
+
   // Helper para obtener headers con token (Admin autenticado)
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
-    return token
-      ? { Authorization: `Bearer ${token}` }
-      : {};
+    return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
   // Cargar citas y servicios al iniciar
   useEffect(() => {
     fetchCitas();
     fetchServicios();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCitas = async () => {
@@ -34,12 +39,7 @@ const CitasManager = () => {
       const response = await axios.get('http://localhost:4000/api/citas', {
         headers: getAuthHeaders()
       });
-      console.log('Citas recibidas del backend:', response.data); // Debug
-      if (response.data && response.data.length > 0) {
-        console.log('Primera cita completa:', response.data[0]); // Debug - ver estructura
-        console.log('Campos disponibles en primera cita:', Object.keys(response.data[0])); // Debug - ver todas las keys
-      }
-      setCitas(response.data);
+      setCitas(response.data || []);
       setCargando(false);
     } catch (err) {
       console.error('Error al cargar citas:', err);
@@ -53,7 +53,7 @@ const CitasManager = () => {
       const response = await axios.get('http://localhost:4000/api/servicios', {
         headers: getAuthHeaders()
       });
-      setServicios(response.data);
+      setServicios(response.data || []);
     } catch (err) {
       console.error('Error al cargar servicios:', err);
     }
@@ -68,19 +68,18 @@ const CitasManager = () => {
     setError('');
 
     try {
-      // Solo modo crear (sin editar)
-      await axios.post('http://localhost:4000/api/citas', {
-        ...form,
-        servicioId: parseInt(form.servicioId)
-      }, {
-        headers: getAuthHeaders()
-      });
+      await axios.post(
+        'http://localhost:4000/api/citas',
+        {
+          ...form,
+          servicioId: parseInt(form.servicioId)
+        },
+        { headers: getAuthHeaders() }
+      );
+
       alert('Cita creada exitosamente');
-      
-      // Limpiar y recargar
       setForm({ nombre: '', email: '', fecha: '', servicioId: '' });
       fetchCitas();
-
     } catch (err) {
       console.error(err);
       if (err.response) {
@@ -94,7 +93,6 @@ const CitasManager = () => {
       }
     }
   };
-
 
   const handleDelete = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar esta cita?')) return;
@@ -111,175 +109,44 @@ const CitasManager = () => {
     }
   };
 
-  // Helper para formatear teléfono a formato WhatsApp (asumiendo México +52)
   const formatearTelefonoWhatsApp = (telefono) => {
     if (!telefono) return '';
-    let limpio = String(telefono).replace(/[^0-9]/g, '');
+    const limpio = String(telefono).replace(/[^0-9]/g, '');
     if (!limpio) return '';
-    if (!limpio.startsWith('52')) {
-      limpio = '52' + limpio;
-    }
-    return limpio;
+    if (limpio.startsWith('52')) return limpio;
+    if (limpio.length === 10) return `52${limpio}`;
+    return `52${limpio}`;
   };
 
-  // Funciones para cambiar el estado de la cita
-  const handleCambiarEstado = async (id, nuevoEstado) => {
-    console.log(`Intentando cambiar estado de cita ${id} a: ${nuevoEstado}`);
+  const crearMensajeWhatsApp = ({ estado, nombreCliente, servicioNombre, fechaTexto, precio }) => {
+    const safeNombre = nombreCliente ? `*${nombreCliente}*` : 'Hola';
 
-    // Buscar la cita seleccionada antes de cambiar el estado (para usar sus datos en WhatsApp)
-    const citaSeleccionada = citas.find(c => c.id === id);
-    
-    try {
-      // Intentar primero con PATCH
-      console.log(`Haciendo PATCH a: http://localhost:4000/api/citas/${id}/estado`);
-      const response = await axios.patch(
-        `http://localhost:4000/api/citas/${id}/estado`,
-        { estado: nuevoEstado },
-        { headers: getAuthHeaders() }
+    if (estado === 'confirmada') {
+      return (
+        `Hola ${safeNombre}, tu cita en JC Studio ha sido *CONFIRMADA*.\n\n` +
+        `📅 Fecha y hora: ${fechaTexto}\n` +
+        `🛠️ Servicio: ${servicioNombre}\n` +
+        (precio ? `💰 Precio: $${precio}\n` : '') +
+        `\n¡Te esperamos!`
       );
-      console.log('Respuesta del servidor:', response.data);
-      fetchCitas();
-      const mensajeBase = nuevoEstado === 'confirmada' 
-        ? 'Cita confirmada exitosamente' 
-        : nuevoEstado === 'rechazada' 
-        ? 'Cita rechazada exitosamente'
-        : `Cita actualizada a: ${nuevoEstado}`;
-      alert(mensajeBase);
-
-      // Si la cita fue confirmada o rechazada y tenemos teléfono, abrir WhatsApp Web
-      if ((nuevoEstado === 'confirmada' || nuevoEstado === 'rechazada') && citaSeleccionada) {
-        const telefono = citaSeleccionada.cliente_telefono || citaSeleccionada.telefono;
-        const waTelefono = formatearTelefonoWhatsApp(telefono);
-
-        if (waTelefono) {
-          const nombreCliente = citaSeleccionada.cliente_nombre || citaSeleccionada.nombre || 'cliente';
-          const servicioNombre = obtenerNombreServicio(citaSeleccionada);
-          const fechaTexto = formatearFecha(
-            citaSeleccionada.fecha_hora ||
-            citaSeleccionada.fecha || 
-            citaSeleccionada.fecha_cita || 
-            citaSeleccionada.fecha_hora_cita ||
-            citaSeleccionada.fecha_agendada
-          );
-
-          let mensajeWhatsApp;
-          
-          if (nuevoEstado === 'confirmada') {
-            // Mensaje para cita confirmada
-            mensajeWhatsApp =
-              `Hola ${nombreCliente}, tu cita en JC Studio ha sido CONFIRMADA.%0A%0A` +
-              `📅 Fecha y hora: ${fechaTexto}%0A` +
-              `💇 Servicio: ${servicioNombre}%0A` +
-              (citaSeleccionada.precio ? `💰 Precio: $${citaSeleccionada.precio}%0A` : '') +
-              `%0A¡Te esperamos!`;
-          } else if (nuevoEstado === 'rechazada') {
-            // Mensaje para cita rechazada (más empático)
-            mensajeWhatsApp =
-              `Hola ${nombreCliente}, lamentamos informarte que tu cita en JC Studio para el ${fechaTexto} ha sido cancelada.%0A%0A` +
-              `💇 Servicio solicitado: ${servicioNombre}%0A%0A` +
-              `Por favor, contáctanos para reagendar tu cita en otro horario disponible.%0A%0A` +
-              `¡Estamos aquí para ayudarte! 🙏`;
-          }
-
-          const urlWhatsApp = `https://wa.me/${waTelefono}?text=${mensajeWhatsApp}`;
-          window.open(urlWhatsApp, '_blank');
-        } else {
-          console.log('No se encontró un teléfono válido para la cita, no se abrió WhatsApp.');
-        }
-      }
-    } catch (err) {
-      console.error('Error con PATCH:', err);
-      console.error('Detalles del error:', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        statusText: err.response?.statusText
-      });
-      
-      // Si PATCH falla, intentar con PUT en el endpoint de estado
-      try {
-        console.log(`Intentando PUT a: http://localhost:4000/api/citas/${id}/estado`);
-        const response = await axios.put(
-          `http://localhost:4000/api/citas/${id}/estado`,
-          { estado: nuevoEstado },
-          { headers: getAuthHeaders() }
-        );
-        console.log('Respuesta del servidor (PUT):', response.data);
-        fetchCitas();
-        const mensaje = nuevoEstado === 'confirmada' 
-          ? 'Cita confirmada exitosamente' 
-          : nuevoEstado === 'rechazada' 
-          ? 'Cita rechazada exitosamente'
-          : `Cita actualizada a: ${nuevoEstado}`;
-        alert(mensaje);
-
-        // Si la cita fue confirmada o rechazada y tenemos teléfono, abrir WhatsApp Web (fallback PUT)
-        if ((nuevoEstado === 'confirmada' || nuevoEstado === 'rechazada') && citaSeleccionada) {
-          const telefono = citaSeleccionada.cliente_telefono || citaSeleccionada.telefono;
-          const waTelefono = formatearTelefonoWhatsApp(telefono);
-
-          if (waTelefono) {
-            const nombreCliente = citaSeleccionada.cliente_nombre || citaSeleccionada.nombre || 'cliente';
-            const servicioNombre = obtenerNombreServicio(citaSeleccionada);
-            const fechaTexto = formatearFecha(
-              citaSeleccionada.fecha_hora ||
-              citaSeleccionada.fecha || 
-              citaSeleccionada.fecha_cita || 
-              citaSeleccionada.fecha_hora_cita ||
-              citaSeleccionada.fecha_agendada
-            );
-
-            let mensajeWhatsApp;
-            
-            if (nuevoEstado === 'confirmada') {
-              mensajeWhatsApp =
-                `Hola ${nombreCliente}, tu cita en JC Studio ha sido CONFIRMADA.%0A%0A` +
-                `📅 Fecha y hora: ${fechaTexto}%0A` +
-                `💇 Servicio: ${servicioNombre}%0A` +
-                (citaSeleccionada.precio ? `💰 Precio: $${citaSeleccionada.precio}%0A` : '') +
-                `%0A¡Te esperamos!`;
-            } else if (nuevoEstado === 'rechazada') {
-              mensajeWhatsApp =
-                `Hola ${nombreCliente}, lamentamos informarte que tu cita en JC Studio para el ${fechaTexto} ha sido cancelada.%0A%0A` +
-                `💇 Servicio solicitado: ${servicioNombre}%0A%0A` +
-                `Por favor, contáctanos para reagendar tu cita en otro horario disponible.%0A%0A` +
-                `¡Estamos aquí para ayudarte! 🙏`;
-            }
-
-            const urlWhatsApp = `https://wa.me/${waTelefono}?text=${mensajeWhatsApp}`;
-            window.open(urlWhatsApp, '_blank');
-          } else {
-            console.log('No se encontró un teléfono válido para la cita, no se abrió WhatsApp.');
-          }
-        }
-      } catch (err2) {
-        console.error('Error con PUT:', err2);
-        console.error('Detalles del error PUT:', {
-          message: err2.message,
-          response: err2.response?.data,
-          status: err2.response?.status,
-          statusText: err2.response?.statusText
-        });
-        
-        // Mostrar error más detallado
-        const errorMsg = err2.response?.data?.error || err2.response?.data?.message || err2.message || 'Error desconocido';
-        const statusCode = err2.response?.status || 'N/A';
-        alert(`Error al cambiar el estado de la cita (${statusCode}): ${errorMsg}\n\nRevisa la consola para más detalles.`);
-      }
     }
+
+    if (estado === 'rechazada') {
+      return (
+        `Hola ${safeNombre}, lamentamos informarte que tu cita para *${fechaTexto}* ha sido *CANCELADA*.\n\n` +
+        `🛠️ Servicio: ${servicioNombre}\n\n` +
+        `Para reagendar, contáctanos. Estamos aquí para ayudarte. 🙏`
+      );
+    }
+
+    return `Hola ${safeNombre}. Tu cita fue actualizada.`;
   };
 
-
-  // Función para formatear fecha para mostrar
   const formatearFecha = (fechaString) => {
     if (!fechaString) return 'Fecha no disponible';
-    
     try {
       const fecha = new Date(fechaString);
-      if (isNaN(fecha.getTime())) {
-        return 'Fecha inválida';
-      }
-      
+      if (isNaN(fecha.getTime())) return 'Fecha inválida';
       return fecha.toLocaleString('es-ES', {
         year: 'numeric',
         month: 'long',
@@ -293,99 +160,272 @@ const CitasManager = () => {
     }
   };
 
-  // Función para obtener el nombre del servicio
   const obtenerNombreServicio = (cita) => {
-    // Primero intentar obtener el nombre directamente si viene en la respuesta (caso más común)
-    if (cita.servicio_nombre) {
-      return cita.servicio_nombre;
-    }
-    if (cita.servicio && cita.servicio.nombre) {
-      return cita.servicio.nombre;
-    }
-    if (cita.nombre_servicio) {
-      return cita.nombre_servicio;
-    }
-    
-    // Si no viene el nombre directamente, intentar buscar por ID
-    const servicioId = cita.servicio_id || cita.servicioId || cita.id_servicio || cita.servicio_id_cita || (cita.servicio && cita.servicio.id);
-    
+    if (cita.servicio_nombre) return cita.servicio_nombre;
+    if (cita.servicio?.nombre) return cita.servicio.nombre;
+    if (cita.nombre_servicio) return cita.nombre_servicio;
+
+    const servicioId =
+      cita.servicio_id ||
+      cita.servicioId ||
+      cita.id_servicio ||
+      cita.servicio_id_cita ||
+      cita.servicio?.id;
+
     if (servicioId || servicioId === 0) {
-      // Buscar el servicio en el array
-      const servicio = servicios.find(s => {
-        const match = s.id === servicioId || 
-                      s.id === parseInt(servicioId) || 
-                      String(s.id) === String(servicioId) ||
-                      Number(s.id) === Number(servicioId);
-        return match;
+      const servicio = servicios.find((s) => {
+        return (
+          s.id === servicioId ||
+          s.id === parseInt(servicioId) ||
+          String(s.id) === String(servicioId) ||
+          Number(s.id) === Number(servicioId)
+        );
       });
-      
-      if (servicio) {
-        return servicio.nombre;
-      }
+      if (servicio) return servicio.nombre;
     }
-    
-    // Si no se encontró nada
+
     return 'Servicio no especificado';
   };
 
-  // Función para obtener el estado de la cita
-  const obtenerEstado = (cita) => {
-    return cita.estado || cita.status || 'pendiente';
+  const obtenerEstado = (cita) => cita.estado || cita.status || 'pendiente';
+
+  const normalizarTexto = (s) => (s === null || s === undefined ? '' : String(s).toLowerCase().trim());
+
+  const parseFechaCita = (cita) => {
+    const fechaString =
+      cita.fecha_hora ||
+      cita.fecha ||
+      cita.fecha_cita ||
+      cita.fecha_hora_cita ||
+      cita.fecha_agendada;
+    if (!fechaString) return null;
+    const d = new Date(fechaString);
+    return isNaN(d.getTime()) ? null : d;
   };
 
-  // Filtrar citas por estado
-  const citasFiltradas = filtroEstado === 'todas' 
-    ? citas 
-    : citas.filter(cita => obtenerEstado(cita) === filtroEstado);
+  const handleCambiarEstado = async (id, nuevoEstado) => {
+    const citaSeleccionada = citas.find((c) => c.id === id);
 
-  // Contadores
-  const contadores = {
-    todas: citas.length,
-    pendiente: citas.filter(c => obtenerEstado(c) === 'pendiente').length,
-    confirmada: citas.filter(c => obtenerEstado(c) === 'confirmada').length,
-    rechazada: citas.filter(c => obtenerEstado(c) === 'rechazada').length
+    try {
+      await axios.patch(
+        `http://localhost:4000/api/citas/${id}/estado`,
+        { estado: nuevoEstado },
+        { headers: getAuthHeaders() }
+      );
+
+      fetchCitas();
+
+      const mensajeBase =
+        nuevoEstado === 'confirmada'
+          ? 'Cita confirmada exitosamente'
+          : nuevoEstado === 'rechazada'
+            ? 'Cita rechazada exitosamente'
+            : `Cita actualizada a: ${nuevoEstado}`;
+
+      alert(mensajeBase);
+
+      if ((nuevoEstado === 'confirmada' || nuevoEstado === 'rechazada') && citaSeleccionada) {
+        const telefono = citaSeleccionada.cliente_telefono || citaSeleccionada.telefono;
+        const waTelefono = formatearTelefonoWhatsApp(telefono);
+
+        if (waTelefono) {
+          const nombreCliente =
+            citaSeleccionada.cliente_nombre || citaSeleccionada.nombre || 'cliente';
+          const servicioNombre = obtenerNombreServicio(citaSeleccionada);
+          const fechaTexto = formatearFecha(
+            citaSeleccionada.fecha_hora ||
+              citaSeleccionada.fecha ||
+              citaSeleccionada.fecha_cita ||
+              citaSeleccionada.fecha_hora_cita ||
+              citaSeleccionada.fecha_agendada
+          );
+
+          const mensajeWhatsApp = crearMensajeWhatsApp({
+            estado: nuevoEstado,
+            nombreCliente,
+            servicioNombre,
+            fechaTexto,
+            precio: citaSeleccionada.precio
+          });
+
+          const urlWhatsApp = `https://wa.me/${waTelefono}?text=${encodeURIComponent(mensajeWhatsApp)}`;
+          window.open(urlWhatsApp, '_blank');
+        }
+      }
+    } catch (err) {
+      console.error('Error con PATCH:', err);
+
+      try {
+        await axios.put(
+          `http://localhost:4000/api/citas/${id}/estado`,
+          { estado: nuevoEstado },
+          { headers: getAuthHeaders() }
+        );
+
+        fetchCitas();
+
+        const mensaje =
+          nuevoEstado === 'confirmada'
+            ? 'Cita confirmada exitosamente'
+            : nuevoEstado === 'rechazada'
+              ? 'Cita rechazada exitosamente'
+              : `Cita actualizada a: ${nuevoEstado}`;
+
+        alert(mensaje);
+      } catch (err2) {
+        console.error('Error con PUT:', err2);
+        const errorMsg =
+          err2.response?.data?.error ||
+          err2.response?.data?.message ||
+          err2.message ||
+          'Error desconocido';
+        const statusCode = err2.response?.status || 'N/A';
+        alert(`Error al cambiar el estado de la cita (${statusCode}): ${errorMsg}\n\nRevisa la consola para más detalles.`);
+      }
+    }
   };
 
   if (cargando) {
-    return <div className="citas-manager"><p>Cargando citas...</p></div>;
+    return (
+      <div className="citas-manager">
+        <p>Cargando citas...</p>
+      </div>
+    );
   }
+
+  // Limitar antigüedad en UI (aprox) para no mostrar demasiado viejo
+  const diasTTL = 90; // puedes ajustar
+  const umbral = new Date();
+  umbral.setDate(umbral.getDate() - diasTTL);
+
+  // Contadores
+  const contadores = {
+    todas: citas.filter((c) => {
+      const d = parseFechaCita(c);
+      if (d && d < umbral) return false;
+      return true;
+    }).length,
+    pendiente: citas.filter((c) => {
+      const d = parseFechaCita(c);
+      if (d && d < umbral) return false;
+      return obtenerEstado(c) === 'pendiente';
+    }).length,
+    confirmada: citas.filter((c) => {
+      const d = parseFechaCita(c);
+      if (d && d < umbral) return false;
+      return obtenerEstado(c) === 'confirmada';
+    }).length,
+    rechazada: citas.filter((c) => {
+      const d = parseFechaCita(c);
+      if (d && d < umbral) return false;
+      return obtenerEstado(c) === 'rechazada';
+    }).length
+  };
+
+  const citasFiltradasBase =
+    filtroEstado === 'todas'
+      ? citas
+      : citas.filter((cita) => obtenerEstado(cita) === filtroEstado);
+
+  const term = normalizarTexto(busqueda);
+  const fechaDesdeObj = fechaDesde ? new Date(`${fechaDesde}T00:00:00`) : null;
+  const fechaHastaObj = fechaHasta ? new Date(`${fechaHasta}T23:59:59`) : null;
+
+  const citasFiltradas = citasFiltradasBase
+    .filter((cita) => {
+      const d = parseFechaCita(cita);
+      if (d && d < umbral) return false;
+
+      const texto = [
+        cita.cliente_nombre,
+        cita.nombre,
+        cita.nombre_cliente,
+        cita.cliente_email,
+        cita.email,
+        cita.correo,
+        cita.email_cliente,
+        cita.correo_cliente,
+        cita.cliente_telefono,
+        cita.telefono,
+        cita.telefono_cliente,
+        obtenerNombreServicio(cita)
+      ].join(' ');
+
+      const matchBusqueda = !term || normalizarTexto(texto).includes(term);
+      if (!matchBusqueda) return false;
+
+      if (d) {
+        if (fechaDesdeObj && d < fechaDesdeObj) return false;
+        if (fechaHastaObj && d > fechaHastaObj) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      const da = parseFechaCita(a)?.getTime() ?? 0;
+      const db = parseFechaCita(b)?.getTime() ?? 0;
+      return ordenFecha === 'asc' ? da - db : db - da;
+    });
+
+  const fechaToKey = (d) => {
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return 'unknown';
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const day = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const hoyKey = fechaToKey(new Date());
+
+  const citasHoy = citasFiltradas.filter((c) => {
+    const d = parseFechaCita(c);
+    return d ? fechaToKey(d) === hoyKey : false;
+  });
+
+  const citasTodasNormal = citasFiltradas.filter((c) => {
+    const d = parseFechaCita(c);
+    return d ? fechaToKey(d) !== hoyKey : false;
+  });
 
   return (
     <div className="citas-manager">
       <h3>Gestión de Citas</h3>
 
-      {/* FORMULARIO - Solo para crear nuevas citas manualmente */}
       <details className="admin-form-container">
         <summary className="form-summary">➕ Agregar Nueva Cita Manualmente</summary>
         <form onSubmit={handleSubmit} className="admin-form">
           <div className="form-row">
-            <input 
-              type="text" name="nombre" placeholder="Nombre del Cliente" 
-              value={form.nombre} onChange={handleChange} required 
+            <input
+              type="text"
+              name="nombre"
+              placeholder="Nombre del Cliente"
+              value={form.nombre}
+              onChange={handleChange}
+              required
             />
-            <input 
-              type="email" name="email" placeholder="Email del Cliente" 
-              value={form.email} onChange={handleChange} required 
+            <input
+              type="email"
+              name="email"
+              placeholder="Email del Cliente"
+              value={form.email}
+              onChange={handleChange}
+              required
             />
           </div>
+
           <div className="form-row">
-            <input 
-              type="datetime-local" name="fecha" 
-              value={form.fecha} onChange={handleChange} required 
-            />
-            <select 
-              name="servicioId" 
-              value={form.servicioId} onChange={handleChange} required
-            >
+            <input type="datetime-local" name="fecha" value={form.fecha} onChange={handleChange} required />
+            <select name="servicioId" value={form.servicioId} onChange={handleChange} required>
               <option value="">Selecciona un servicio...</option>
-              {servicios.map(servicio => (
+              {servicios.map((servicio) => (
                 <option key={servicio.id} value={servicio.id}>
                   {servicio.nombre} - ${servicio.precio}
                 </option>
               ))}
             </select>
           </div>
-          
+
           <div className="form-actions">
             <button type="submit" className="btn-create">
               Agregar Cita
@@ -395,155 +435,218 @@ const CitasManager = () => {
         </form>
       </details>
 
-      {/* FILTROS POR ESTADO */}
+      {/* FILTROS */}
       <div className="citas-filtros">
-        <button 
-          className={`filtro-btn ${filtroEstado === 'todas' ? 'active' : ''}`}
-          onClick={() => setFiltroEstado('todas')}
-        >
-          Todas ({contadores.todas})
-        </button>
-        <button 
-          className={`filtro-btn ${filtroEstado === 'pendiente' ? 'active' : ''}`}
-          onClick={() => setFiltroEstado('pendiente')}
-        >
-          En Espera ({contadores.pendiente})
-        </button>
-        <button 
-          className={`filtro-btn ${filtroEstado === 'confirmada' ? 'active' : ''}`}
-          onClick={() => setFiltroEstado('confirmada')}
-        >
-          Confirmadas ({contadores.confirmada})
-        </button>
-        <button 
-          className={`filtro-btn ${filtroEstado === 'rechazada' ? 'active' : ''}`}
-          onClick={() => setFiltroEstado('rechazada')}
-        >
-          Rechazadas ({contadores.rechazada})
-        </button>
+        <div className="citas-filtros-top">
+          <input
+            className="citas-search"
+            type="text"
+            placeholder="Buscar por nombre, email, teléfono o servicio..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+
+          <div className="filtros-fechas">
+            <label>
+              Desde
+              <input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
+            </label>
+            <label>
+              Hasta
+              <input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
+            </label>
+          </div>
+
+          <div className="filtros-orden">
+            <label>
+              Orden
+              <select value={ordenFecha} onChange={(e) => setOrdenFecha(e.target.value)}>
+                <option value="desc">Más recientes</option>
+                <option value="asc">Más antiguas</option>
+              </select>
+            </label>
+          </div>
+
+          <button
+            className="btn-clear"
+            type="button"
+            onClick={() => {
+              setBusqueda('');
+              setFechaDesde('');
+              setFechaHasta('');
+              setOrdenFecha('desc');
+              setFiltroEstado('todas');
+            }}
+          >
+            Limpiar
+          </button>
+        </div>
+
+        <div className="citas-filtros-bottom">
+          <button className={`filtro-btn ${filtroEstado === 'todas' ? 'active' : ''}`} onClick={() => setFiltroEstado('todas')}>
+            Todas ({contadores.todas})
+          </button>
+          <button className={`filtro-btn ${filtroEstado === 'pendiente' ? 'active' : ''}`} onClick={() => setFiltroEstado('pendiente')}>
+            En Espera ({contadores.pendiente})
+          </button>
+          <button className={`filtro-btn ${filtroEstado === 'confirmada' ? 'active' : ''}`} onClick={() => setFiltroEstado('confirmada')}>
+            Confirmadas ({contadores.confirmada})
+          </button>
+          <button className={`filtro-btn ${filtroEstado === 'rechazada' ? 'active' : ''}`} onClick={() => setFiltroEstado('rechazada')}>
+            Rechazadas ({contadores.rechazada})
+          </button>
+        </div>
       </div>
 
-      {/* LISTA DE CITAS */}
+      {/* LISTA */}
       <div className="citas-list">
         <h4>
-          {filtroEstado === 'todas' && `Todas las Citas (${citas.length})`}
+         {/* {filtroEstado === 'todas' && `Todas las Citas (${citas.length})`} */}
           {filtroEstado === 'pendiente' && `Citas en Espera (${contadores.pendiente})`}
           {filtroEstado === 'confirmada' && `Citas Confirmadas (${contadores.confirmada})`}
           {filtroEstado === 'rechazada' && `Citas Rechazadas (${contadores.rechazada})`}
         </h4>
+
         {citasFiltradas.length === 0 ? (
           <p className="no-data">No hay citas en esta categoría.</p>
         ) : (
-          <div className="citas-grid">
-            {citasFiltradas.map(cita => {
-              const estado = obtenerEstado(cita);
-              return (
-                <div key={cita.id} className={`cita-card cita-${estado}`}>
-                <div className="cita-header">
-                  <h4>{cita.cliente_nombre || cita.nombre || cita.nombre_cliente || 'Sin nombre'}</h4>
-                  <div className="cita-badges">
-                    <span className={`cita-estado estado-${estado}`}>
-                      {estado === 'pendiente' ? '⏳ En Espera' : 
-                       estado === 'confirmada' ? '✅ Confirmada' : 
-                       '❌ Rechazada'}
-                    </span>
-                    <span className="cita-id">#{cita.id}</span>
-                  </div>
+          <>
+            {/* Apartado Hoy */}
+            {citasHoy.length > 0 && (
+              <>
+                <h5 className="citas-dia-titulo">📌 Hoy ({citasHoy.length})</h5>
+                <div className="citas-grid">
+                  {citasHoy.map((cita) => {
+                    const estado = obtenerEstado(cita);
+                    return (
+                      <div key={cita.id} className={`cita-card cita-${estado}`}>
+                        <div className="cita-header">
+                          <h4>{cita.cliente_nombre || cita.nombre || cita.nombre_cliente || 'Sin nombre'}</h4>
+                          <div className="cita-badges">
+                            <span className={`cita-estado estado-${estado}`}>
+                              {estado === 'pendiente' ? '⏳ En Espera' : estado === 'confirmada' ? '✅ Confirmada' : '❌ Rechazada'}
+                            </span>
+                            <span className="cita-id">#{cita.id}</span>
+                          </div>
+                        </div>
+
+                        <div className="cita-info">
+                          <p>
+                            <strong>📞 Teléfono:</strong> {cita.cliente_telefono || cita.telefono || 'No registrado'}
+                          </p>
+                          <p>
+                            <strong>📧 Email:</strong>{' '}
+                            {cita.cliente_email ||
+                              cita.email ||
+                              cita.correo ||
+                              cita.email_cliente ||
+                              cita.correo_cliente ||
+                              (cita.cliente && cita.cliente.email) ||
+                              (cita.cliente && cita.cliente.correo) ||
+                              'No especificado'}
+                          </p>
+                          <p>
+                            <strong>📅 Fecha:</strong> {formatearFecha(cita.fecha_hora || cita.fecha || cita.fecha_cita || cita.fecha_hora_cita || cita.fecha_agendada)}
+                          </p>
+                          <p>
+                            <strong>💇 Servicio:</strong> {obtenerNombreServicio(cita)}
+                          </p>
+                        </div>
+
+                        <div className="cita-actions">
+                          {estado === 'pendiente' ? (
+                            <>
+                              <button onClick={() => handleCambiarEstado(cita.id, 'confirmada')} className="btn-confirm">
+                                ✅ Confirmar
+                              </button>
+                              <button onClick={() => handleCambiarEstado(cita.id, 'rechazada')} className="btn-reject">
+                                ❌ Rechazar
+                              </button>
+                            </>
+                          ) : (
+                            <button onClick={() => handleCambiarEstado(cita.id, 'pendiente')} className="btn-edit">
+                              🔄 Volver a Pendiente
+                            </button>
+                          )}
+                          {estado === 'confirmada' || estado === 'rechazada' ? (
+                            <button onClick={() => handleDelete(cita.id)} className="btn-delete">
+                              🗑️ Eliminar
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="cita-info">
-                  <p><strong>📞 Teléfono:</strong> {
-                    cita.cliente_telefono ||
-                    cita.telefono ||
-                    'No registrado'
-                  }</p>
-                  <p><strong>📧 Email:</strong> {
-                    cita.cliente_email || 
-                    cita.email || 
-                    cita.correo || 
-                    cita.email_cliente || 
-                    cita.correo_cliente ||
-                    (cita.cliente && cita.cliente.email) ||
-                    (cita.cliente && cita.cliente.correo) ||
-                    'No especificado'
-                  }</p>
-                  <p><strong>📅 Fecha:</strong> {formatearFecha(
-                    cita.fecha_hora ||
-                    cita.fecha || 
-                    cita.fecha_cita || 
-                    cita.fecha_hora_cita ||
-                    cita.fecha_agendada
-                  )}</p>
-                  <p><strong>💇 Servicio:</strong> {obtenerNombreServicio(cita)}</p>
-                  {/* Debug: Mostrar todos los campos para identificar el problema */}
-                  <details style={{ marginTop: '10px', fontSize: '0.8rem', color: '#999', cursor: 'pointer' }}>
-                    <summary style={{ color: '#666' }}>🔍 Ver datos completos (Debug)</summary>
-                    <div style={{ 
-                      background: '#f5f5f5', 
-                      padding: '10px', 
-                      borderRadius: '4px', 
-                      overflow: 'auto',
-                      fontSize: '0.75rem',
-                      marginTop: '5px'
-                    }}>
-                      <p><strong>Campos disponibles:</strong> {Object.keys(cita).join(', ')}</p>
-                      <p style={{ marginTop: '5px', marginBottom: '5px' }}>
-                        <strong>Email encontrado en:</strong> {
-                          cita.cliente_email ? 'cliente_email' :
-                          cita.email ? 'email' :
-                          cita.correo ? 'correo' :
-                          cita.email_cliente ? 'email_cliente' :
-                          'NINGUNO'
-                        }
-                      </p>
-                      <p style={{ marginTop: '5px', marginBottom: '5px' }}>
-                        <strong>Servicio encontrado en:</strong> {
-                          cita.servicio_nombre ? `servicio_nombre: "${cita.servicio_nombre}"` :
-                          cita.servicio_id ? `servicio_id: ${cita.servicio_id}` :
-                          cita.servicioId ? `servicioId: ${cita.servicioId}` :
-                          cita.id_servicio ? `id_servicio: ${cita.id_servicio}` :
-                          cita.servicio ? `servicio: ${JSON.stringify(cita.servicio)}` :
-                          'NINGUNO'
-                        }
-                      </p>
-                      <pre style={{ marginTop: '10px' }}>
-                        {JSON.stringify(cita, null, 2)}
-                      </pre>
+              </>
+            )}
+
+            {/* Apartado Todas */}
+            <h5 className="citas-dia-titulo">Todas</h5>
+            <div className="citas-grid">
+              {citasTodasNormal.map((cita) => {
+                const estado = obtenerEstado(cita);
+                return (
+                  <div key={cita.id} className={`cita-card cita-${estado}`}>
+                    <div className="cita-header">
+                      <h4>{cita.cliente_nombre || cita.nombre || cita.nombre_cliente || 'Sin nombre'}</h4>
+                      <div className="cita-badges">
+                        <span className={`cita-estado estado-${estado}`}>
+                          {estado === 'pendiente' ? '⏳ En Espera' : estado === 'confirmada' ? '✅ Confirmada' : '❌ Rechazada'}
+                        </span>
+                        <span className="cita-id">#{cita.id}</span>
+                      </div>
                     </div>
-                  </details>
-                </div>
-                  <div className="cita-actions">
-                    {estado === 'pendiente' && (
-                      <>
-                        <button 
-                          onClick={() => handleCambiarEstado(cita.id, 'confirmada')} 
-                          className="btn-confirm"
-                        >
-                          ✅ Confirmar
+
+                    <div className="cita-info">
+                      <p>
+                        <strong>📞 Teléfono:</strong> {cita.cliente_telefono || cita.telefono || 'No registrado'}
+                      </p>
+                      <p>
+                        <strong>📧 Email:</strong>{' '}
+                        {cita.cliente_email ||
+                          cita.email ||
+                          cita.correo ||
+                          cita.email_cliente ||
+                          cita.correo_cliente ||
+                          (cita.cliente && cita.cliente.email) ||
+                          (cita.cliente && cita.cliente.correo) ||
+                          'No especificado'}
+                      </p>
+                      <p>
+                        <strong>📅 Fecha:</strong> {formatearFecha(cita.fecha_hora || cita.fecha || cita.fecha_cita || cita.fecha_hora_cita || cita.fecha_agendada)}
+                      </p>
+                      <p>
+                        <strong>💇 Servicio:</strong> {obtenerNombreServicio(cita)}
+                      </p>
+                    </div>
+
+                    <div className="cita-actions">
+                      {estado === 'pendiente' ? (
+                        <>
+                          <button onClick={() => handleCambiarEstado(cita.id, 'confirmada')} className="btn-confirm">
+                            ✅ Confirmar
+                          </button>
+                          <button onClick={() => handleCambiarEstado(cita.id, 'rechazada')} className="btn-reject">
+                            ❌ Rechazar
+                          </button>
+                        </>
+                      ) : (
+                        <button onClick={() => handleCambiarEstado(cita.id, 'pendiente')} className="btn-edit">
+                          🔄 Volver a Pendiente
                         </button>
-                        <button 
-                          onClick={() => handleCambiarEstado(cita.id, 'rechazada')} 
-                          className="btn-reject"
-                        >
-                          ❌ Rechazar
+                      )}
+                      {estado === 'confirmada' || estado === 'rechazada' ? (
+                        <button onClick={() => handleDelete(cita.id)} className="btn-delete">
+                          🗑️ Eliminar
                         </button>
-                      </>
-                    )}
-                    {estado !== 'pendiente' && (
-                      <button 
-                        onClick={() => handleCambiarEstado(cita.id, 'pendiente')} 
-                        className="btn-edit"
-                      >
-                        🔄 Volver a Pendiente
-                      </button>
-                    )}
-                    <button onClick={() => handleDelete(cita.id)} className="btn-delete">
-                      🗑️ Eliminar
-                    </button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -551,3 +654,4 @@ const CitasManager = () => {
 };
 
 export default CitasManager;
+

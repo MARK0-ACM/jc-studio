@@ -47,11 +47,16 @@ const ServicesManager = () => {
         await axios.post('http://localhost:4000/api/servicios', form);
         alert('Servicio creado');
       }
-      
+
       // Limpiar y recargar
       setForm({ nombre: '', descripcion: '', duracion_min: '', precio: '' });
       setEditingId(null);
       fetchServicios();
+
+      // Subir al formulario para que el cambio se vea claramente
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
 
     } catch (err) {
       console.error(err);
@@ -67,6 +72,12 @@ const ServicesManager = () => {
       descripcion: servicio.descripcion,
       duracion_min: servicio.duracion_min,
       precio: servicio.precio
+    });
+
+    // Subir automáticamente al formulario para que se vea el modo edición
+    // (evita que el usuario tenga que scrollear y sienta que “no pasó nada”)
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   };
 

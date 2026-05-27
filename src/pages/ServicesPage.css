@@ -1,138 +1,242 @@
+/* =============================================
+   SERVICES PAGE — JC Studio · Negro & Dorado
+   ============================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --jc-black:  #0a0a0a;
+  --jc-dark:   #111111;
+  --jc-dark2:  #161616;
+  --jc-gold:   #c9a84c;
+  --jc-gold2:  #e8c96a;
+  --jc-white:  #f5f0e8;
+  --jc-muted:  rgba(245,240,232,0.5);
+  --jc-border: rgba(201,168,76,0.15);
+}
+
 .services-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 60px 20px;
-    background: linear-gradient(to bottom, #ffffff 0%, #f8f9ff 100%);
-    min-height: 100vh;
-  }
-  
-  .services-header {
-    text-align: center;
-    margin-bottom: 70px;
-    padding-top: 40px;
-  }
-  
-  .services-header h1 { 
-    font-size: 3.5rem; 
-    color: #2d3748; 
-    font-weight: 800;
-    letter-spacing: -2px;
-    margin-bottom: 15px;
-  }
-  
-  .services-header p { 
-    color: #718096; 
-    font-size: 1.3rem; 
-    font-weight: 300;
-  }
-  
+  font-family: 'DM Sans', sans-serif;
+  background: var(--jc-black);
+  min-height: 100vh;
+  color: var(--jc-white);
+}
+
+/* ── Header ── */
+.services-header {
+  position: relative;
+  text-align: center;
+  padding: 90px 2rem 70px;
+  background: var(--jc-dark);
+  overflow: hidden;
+}
+
+.services-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 80% at 50% 0%, rgba(201,168,76,0.1) 0%, transparent 70%);
+}
+
+.services-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--jc-gold), transparent);
+  opacity: 0.3;
+}
+
+.services-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--jc-gold);
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+.services-eyebrow::before,
+.services-eyebrow::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--jc-gold));
+}
+.services-eyebrow::after {
+  background: linear-gradient(90deg, var(--jc-gold), transparent);
+}
+
+.services-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  font-weight: 700;
+  color: var(--jc-white);
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+  position: relative;
+  z-index: 1;
+}
+
+.services-header p {
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: var(--jc-muted);
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Grid ── */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+/* ── Card ── */
+.service-card-full {
+  background: var(--jc-dark);
+  border: 1px solid var(--jc-border);
+  border-radius: 16px;
+  padding: 36px 32px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s;
+}
+
+/* Línea dorada superior al hover */
+.service-card-full::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--jc-gold), var(--jc-gold2));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+
+/* Número decorativo de fondo */
+.service-card-full::after {
+  content: attr(data-index);
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 5rem;
+  font-weight: 700;
+  color: rgba(201,168,76,0.05);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.service-card-full:hover {
+  transform: translateY(-5px);
+  border-color: rgba(201,168,76,0.35);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.45);
+}
+
+.service-card-full:hover::before {
+  transform: scaleX(1);
+}
+
+/* ── Info ── */
+.service-info h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--jc-white);
+  margin: 0 0 14px;
+  line-height: 1.2;
+}
+
+.service-desc {
+  font-size: 0.88rem;
+  font-weight: 300;
+  color: var(--jc-muted);
+  line-height: 1.75;
+  margin: 0 0 28px;
+}
+
+/* ── Meta ── */
+.service-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 0;
+  border-top: 1px solid var(--jc-border);
+  border-bottom: 1px solid var(--jc-border);
+  margin-bottom: 24px;
+}
+
+.service-meta .duration {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--jc-muted);
+  letter-spacing: 0.04em;
+}
+
+.service-meta .price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--jc-gold);
+  line-height: 1;
+}
+
+/* ── Botón ── */
+.btn-book {
+  display: block;
+  text-align: center;
+  background: transparent;
+  color: var(--jc-gold);
+  border: 1px solid rgba(201,168,76,0.35);
+  padding: 13px 20px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.22s ease;
+}
+
+.btn-book:hover {
+  background: linear-gradient(135deg, var(--jc-gold), var(--jc-gold2));
+  color: var(--jc-black);
+  border-color: transparent;
+  box-shadow: 0 6px 24px rgba(201,168,76,0.3);
+  transform: translateY(-1px);
+}
+
+/* ── Loading ── */
+.loading {
+  text-align: center;
+  padding: 80px;
+  color: var(--jc-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
   .services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 35px;
+    grid-template-columns: 1fr;
+    padding: 32px 16px 60px;
+    gap: 14px;
   }
-  
-  .service-card-full {
-    background: white;
-    border: none;
-    border-radius: 20px;
-    padding: 35px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .service-card-full::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #a78bfa 100%);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-  }
-  
-  .service-card-full:hover { 
-    transform: translateY(-10px);
-    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.2);
-  }
-
-  .service-card-full:hover::before {
-    transform: scaleX(1);
-  }
-  
-  .service-info h3 { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 15px; 
-    font-size: 1.8rem;
-    font-weight: 700;
-  }
-  
-  .service-desc { 
-    color: #4a5568; 
-    line-height: 1.7; 
-    margin-bottom: 25px;
-    font-size: 1rem;
-  }
-  
-  .service-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    margin-bottom: 25px;
-    color: #2d3748;
-    border-top: 2px solid #f0f0f0;
-    padding-top: 20px;
-  }
-
-  .service-meta .duration {
-    color: #718096;
-    font-size: 0.95rem;
-  }
-
-  .service-meta .price {
-    font-size: 1.8rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .btn-book {
-    display: block;
-    text-align: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 14px 20px;
-    border-radius: 12px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    font-size: 1.05rem;
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-  }
-  
-  .btn-book:hover { 
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  }
-
-  .loading {
-    text-align: center;
-    color: #718096;
-    font-size: 1.2rem;
-    padding: 60px 20px;
-  }
-  
+}

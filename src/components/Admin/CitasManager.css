@@ -7,14 +7,8 @@
 
 .citas-manager h3 {
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   font-size: 1.5rem;
-}
-
-.citas-manager h4 {
-  color: #555;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
 }
 
 /* Formulario */
@@ -22,7 +16,7 @@
   background: #f9f9f9;
   padding: 15px;
   border-radius: 8px;
-  margin-bottom: 30px;
+  margin-bottom: 18px;
   border: 1px solid #e0e0e0;
 }
 
@@ -63,18 +57,13 @@
   font-size: 1rem;
 }
 
-.admin-form select {
-  cursor: pointer;
-}
-
 .form-actions {
   display: flex;
   gap: 10px;
   margin-top: 15px;
 }
 
-.btn-create,
-.btn-update {
+.btn-create {
   background-color: #6f42c1;
   color: white;
   padding: 10px 20px;
@@ -85,23 +74,8 @@
   transition: background 0.3s;
 }
 
-.btn-create:hover,
-.btn-update:hover {
+.btn-create:hover {
   background-color: #5a32a3;
-}
-
-.btn-cancel {
-  background-color: #6c757d;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.btn-cancel:hover {
-  background-color: #5a6268;
 }
 
 .error-msg {
@@ -110,10 +84,111 @@
   font-size: 0.9rem;
 }
 
-/* Lista de Citas */
-.citas-list {
-  margin-top: 30px;
+/* Filtros */
+.citas-filtros {
+  margin-bottom: 20px;
 }
+
+.citas-filtros-top {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.citas-search {
+  flex: 1;
+  min-width: 260px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #e6e6e6;
+  font-size: 0.95rem;
+}
+
+.filtros-fechas {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filtros-fechas label,
+.filtros-orden label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.filtros-fechas input,
+.filtros-orden select {
+  padding: 10px 10px;
+  border-radius: 6px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+}
+
+.btn-clear {
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  color: #333;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-clear:hover {
+  background: #e9e9e9;
+}
+
+.citas-filtros-bottom {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filtro-btn {
+  background: #f0f0f0;
+  border: 2px solid transparent;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.filtro-btn:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.filtro-btn.active {
+  background: #6f42c1;
+  color: white;
+  border-color: #6f42c1;
+}
+
+/* Lista */
+.citas-list {
+  margin-top: 12px;
+}
+
+/* Agrupación por día */
+.citas-dia {
+  margin-bottom: 22px;
+}
+
+.citas-dia-titulo {
+  margin: 12px 0 12px;
+  color: #333;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
 
 .no-data {
   text-align: center;
@@ -129,32 +204,94 @@
 }
 
 .cita-card {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(20, 20, 20, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.cita-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px circle at 0% 0%, rgba(111, 66, 193, 0.10), transparent 40%),
+    radial-gradient(600px circle at 100% 0%, rgba(40, 167, 69, 0.08), transparent 35%);
+  pointer-events: none;
 }
 
 .cita-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.12);
+  border-color: rgba(111, 66, 193, 0.25);
+}
+
+.cita-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.12);
+  border-color: rgba(111, 66, 193, 0.25);
 }
 
 .cita-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 10px;
+}
+
+.cita-header h4 {
+  font-size: 1.08rem;
+  letter-spacing: 0.2px;
+  line-height: 1.25;
 }
 
 .cita-header h4 {
   margin: 0;
   color: #333;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+}
+
+.cita-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cita-estado {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03);
+}
+
+.estado-pendiente {
+  background: #fff7e6;
+  color: #7a5200;
+  border: 1px solid rgba(255, 193, 7, 0.65);
+}
+
+.estado-confirmada {
+  background: #e9f9ef;
+  color: #0f5132;
+  border: 1px solid rgba(40, 167, 69, 0.55);
+}
+
+.estado-rechazada {
+  background: #fdecec;
+  color: #7a0f1f;
+  border: 1px solid rgba(220, 53, 69, 0.55);
 }
 
 .cita-id {
@@ -167,149 +304,46 @@
 }
 
 .cita-info {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .cita-info p {
+  position: relative;
   margin: 8px 0;
-  color: #555;
+  color: rgba(17, 24, 39, 0.78);
   font-size: 0.95rem;
   line-height: 1.5;
 }
 
 .cita-info strong {
-  color: #333;
+  color: rgba(17, 24, 39, 0.95);
+  font-weight: 800;
 }
 
 .cita-actions {
+  position: relative;
   display: flex;
   gap: 10px;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.btn-edit {
-  background-color: #ffc107;
-  color: #333;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
+.cita-actions button {
   flex: 1;
-  transition: background 0.3s;
+  min-width: 100px;
 }
 
-.btn-edit:hover {
-  background-color: #e0a800;
-}
-
-.btn-delete {
-  background-color: #dc3545;
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  flex: 1;
-  transition: background 0.3s;
-}
-
-.btn-delete:hover {
-  background-color: #c82333;
-}
-
-/* Filtros por Estado */
-.citas-filtros {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.filtro-btn {
-  background: #f0f0f0;
-  border: 2px solid transparent;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #666;
-  transition: all 0.3s;
-}
-
-.filtro-btn:hover {
-  background: #e0e0e0;
-  color: #333;
-}
-
-.filtro-btn.active {
-  background: #6f42c1;
-  color: white;
-  border-color: #6f42c1;
-}
-
-/* Estados de Citas */
-.cita-badges {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.cita-estado {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.estado-pendiente {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffc107;
-}
-
-.estado-confirmada {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #28a745;
-}
-
-.estado-rechazada {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #dc3545;
-}
-
-/* Estilos por estado de cita */
-.cita-card.cita-pendiente {
-  border-left: 4px solid #ffc107;
-}
-
-.cita-card.cita-confirmada {
-  border-left: 4px solid #28a745;
-}
-
-.cita-card.cita-rechazada {
-  border-left: 4px solid #dc3545;
-  opacity: 0.8;
-}
-
-/* Botones de acción */
 .btn-confirm {
   background-color: #28a745;
   color: white;
-  padding: 8px 16px;
+  padding: 10px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
-  flex: 1;
-  transition: background 0.3s;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background 0.2s;
 }
 
 .btn-confirm:hover {
@@ -319,61 +353,76 @@
 .btn-reject {
   background-color: #dc3545;
   color: white;
-  padding: 8px 16px;
+  padding: 10px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
-  flex: 1;
-  transition: background 0.3s;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background 0.2s;
 }
 
 .btn-reject:hover {
   background-color: #c82333;
 }
 
-.cita-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #f0f0f0;
-  flex-wrap: wrap;
+.btn-edit {
+  background-color: #ffc107;
+  color: #333;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background 0.2s;
 }
 
-.cita-actions button {
-  flex: 1;
-  min-width: 100px;
+.btn-edit:hover {
+  background-color: #e0a800;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background 0.2s;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+  .cita-card {
+    border-radius: 12px;
+  }
+
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .citas-filtros-top {
+    align-items: stretch;
+  }
+
+  .citas-search {
+    min-width: 100%;
   }
 
   .citas-grid {
     grid-template-columns: 1fr;
   }
 
-  .citas-filtros {
-    flex-direction: column;
-  }
-
-  .filtro-btn {
-    width: 100%;
-    text-align: center;
-  }
-
   .cita-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
-  }
-
-  .cita-badges {
-    width: 100%;
-    justify-content: space-between;
   }
 
   .cita-actions {

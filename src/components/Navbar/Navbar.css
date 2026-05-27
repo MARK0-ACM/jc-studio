@@ -1,168 +1,213 @@
-.navbar-header {
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 1rem 2rem;
+/* =============================================
+   NAVBAR — JC Studio · Negro & Dorado
+   ============================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --jc-black:   #0a0a0a;
+  --jc-dark:    #111111;
+  --jc-gold:    #c9a84c;
+  --jc-gold2:   #e8c96a;
+  --jc-white:   #f5f0e8;
+  --jc-muted:   rgba(245,240,232,0.55);
+  --jc-border:  rgba(201,168,76,0.18);
 }
 
-/* Navbar Moderno */
+/* ---- Barra principal ---- */
 .navbar {
-  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-  color: white;
-  padding: 1.2rem 2rem;
+  background: var(--jc-black);
+  border-bottom: 1px solid var(--jc-border);
+  padding: 0 2.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  height: 68px;
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 40px rgba(0,0,0,0.6);
 }
 
+/* ---- Logo ---- */
 .navbar-logo a {
-  color: white;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-decoration: none;
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -1px;
-  background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+  color: var(--jc-gold);
+  background: linear-gradient(135deg, var(--jc-gold) 0%, var(--jc-gold2) 60%, var(--jc-gold) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s;
 }
 
 .navbar-logo a:hover {
-  transform: scale(1.05);
+  opacity: 0.85;
 }
 
+/* ---- Links ---- */
 .navbar-links {
-  list-style: none; /* Quita los puntos de la lista */
+  list-style: none;
   margin: 0;
   padding: 0;
-  display: flex; /* Para alinear los ítems de la lista */
-  gap: 20px; /* Espacio entre los links */
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .navbar-links li a {
-  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--jc-muted);
   text-decoration: none;
-  font-size: 1rem;
-  padding: 8px 12px;
-  border-radius: 5px;
-  transition: all 0.3s ease;
-  position: relative;
+  padding: 7px 14px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  display: block;
 }
 
 .navbar-links li a:hover {
-  color: #f0f0f0; /* Color al pasar el ratón */
+  color: var(--jc-white);
+  background: rgba(255,255,255,0.06);
 }
 
-/* Indicador de página actual - Recuadro lila claro */
+/* ---- Link activo (página actual) ---- */
 .navbar-links li a.active {
-  background-color: #a78bfa; /* Lila claro */
-  color: white !important;
+  color: var(--jc-gold);
+  background: rgba(201,168,76,0.1);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
 }
 
-.navbar-links li a.active:hover {
-  background-color: #8b5cf6; /* Lila un poco más oscuro */
-}
-
-/* Estilo para el botón de logout (ya lo tenías, solo por si acaso) */
-.btn-logout {
-  background: none;
-  border: 1px solid white; /* Borde blanco para que se vea */
-  color: white;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.btn-logout:hover {
-  background: white;
-  color: #333; /* Cambia a color del fondo del navbar */
-}
-/* ... tus estilos base de .navbar ... */
-
-.navbar-links {
-  display: flex;
-  align-items: center; /* Alinea todo verticalmente al centro */
-  gap: 20px;
-  list-style: none;
-}
-
-.navbar-links a {
-  text-decoration: none;
-  color: white; /* O el color que uses */
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-.navbar-links a:hover:not(.active) {
-  color: #c4b5fd; /* Lila claro al pasar el mouse (si no está activo) */
-}
-
-/* --- BOTÓN DESTACADO (Call to Action) --- */
-/* Hacemos que "Agendar Cita" parezca un botón aunque sea un link */
+/* ---- CTA — Agendar Cita ---- */
 .nav-cta {
-  background-color: #a78bfa; /* Lila claro */
-  color: white !important; /* Forzamos blanco */
-  padding: 8px 16px;
-  border-radius: 5px;
-  font-weight: bold !important;
-  transition: background 0.3s;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase;
+  color: var(--jc-black) !important;
+  background: linear-gradient(135deg, var(--jc-gold) 0%, var(--jc-gold2) 100%) !important;
+  padding: 9px 20px !important;
+  border-radius: 50px !important;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s !important;
+  box-shadow: 0 2px 16px rgba(201,168,76,0.25);
 }
 
 .nav-cta:hover {
-  background-color: #8b5cf6; /* Lila un poco más oscuro al hover */
+  opacity: 0.9 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 24px rgba(201,168,76,0.4) !important;
+  background: linear-gradient(135deg, var(--jc-gold) 0%, var(--jc-gold2) 100%) !important;
 }
 
 .nav-cta.active {
-  background-color: #7c3aed; /* Lila más intenso cuando está activo */
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 0 0 2px var(--jc-gold), 0 4px 20px rgba(201,168,76,0.3) !important;
 }
 
-/* Separador pequeño para el admin */
+/* ---- Separador ---- */
 .admin-separator {
-  color: #666;
-  font-size: 1.2rem;
+  color: var(--jc-border);
+  font-size: 1.1rem;
+  padding: 0 4px;
 }
 
-/* Botón de salir (ajuste visual) */
+/* ---- Admin / Mis Citas link ---- */
+.admin-link {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--jc-muted);
+  text-decoration: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.admin-link:hover {
+  color: var(--jc-white);
+  background: rgba(255,255,255,0.06);
+}
+
+.admin-link.active {
+  color: var(--jc-gold) !important;
+  background: rgba(201,168,76,0.1) !important;
+}
+
+/* ---- Botón Salir ---- */
 .btn-logout {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
   background: transparent;
-  border: 1px solid #ff6b6b;
-  color: #ff6b6b;
-  padding: 5px 10px;
-  border-radius: 4px;
+  border: 1px solid rgba(201,168,76,0.35);
+  color: var(--jc-muted);
+  padding: 7px 16px;
+  border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
 }
 
 .btn-logout:hover {
-  background: #ff6b6b;
-  color: white;
+  border-color: var(--jc-gold);
+  color: var(--jc-gold);
+  background: rgba(201,168,76,0.08);
 }
 
-/* Link discreto para el Login (para que no distraiga a los clientes) */
+/* ---- Login / Registro ---- */
 .login-link {
-  font-size: 0.9rem;
-  opacity: 0.7;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  color: var(--jc-muted);
+  text-decoration: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.login-link:hover {
+  color: var(--jc-white);
+  background: rgba(255,255,255,0.06);
 }
 
 .login-link.active {
-  opacity: 1;
-  background-color: #a78bfa; /* Lila claro cuando está activo */
-  color: white !important;
+  color: var(--jc-gold);
+  background: rgba(201,168,76,0.1);
 }
 
-/* Admin link también con indicador */
-.admin-link.active {
-  background-color: #a78bfa; /* Lila claro cuando está activo */
-  color: white !important;
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1.2rem;
+    height: 60px;
+  }
+
+  .navbar-logo a {
+    font-size: 1.4rem;
+  }
+
+  .navbar-links {
+    gap: 2px;
+  }
+
+  .navbar-links li a,
+  .login-link,
+  .admin-link {
+    font-size: 0.78rem;
+    padding: 6px 9px;
+  }
+
+  .nav-cta {
+    font-size: 0.75rem !important;
+    padding: 7px 14px !important;
+  }
+
+  .admin-separator {
+    display: none;
+  }
 }
