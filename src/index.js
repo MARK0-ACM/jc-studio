@@ -4,6 +4,15 @@ import ReactDOM from 'react-dom/client';
 import './index.css'; // (O cualquier CSS que tengas)
 import App from './App';
 
+// Fix para iOS/Android: 100vh no coincide con el viewport real en vertical
+const setVhVar = () => {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+};
+
+setVhVar();
+window.addEventListener('resize', setVhVar);
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

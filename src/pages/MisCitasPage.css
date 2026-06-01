@@ -51,7 +51,7 @@
 
 .btn-agendar {
   display: inline-block;
-  background-color: #3498db;
+  background-color: #b1db34;
   color: white;
   padding: 12px 30px;
   border-radius: 5px;
@@ -61,7 +61,7 @@
 }
 
 .btn-agendar:hover {
-  background-color: #2980b9;
+  background-color: #e9f503;
 }
 
 .citas-container {

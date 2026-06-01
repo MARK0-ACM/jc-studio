@@ -94,47 +94,15 @@ const CitasForm = () => {
     return fechaMax.toISOString().split('T')[0];
   };
 
-  // Función para obtener la hora mínima permitida
-  const getMinTime = () => {
-    const ahora = new Date();
-    // Si la fecha seleccionada es hoy, usar hora actual o 11am
-    if (fechaInput === getMinDate()) {
-      if (ahora.getHours() >= HORA_INICIO) {
-        // Ya pasaron las 11am, redondear al siguiente intervalo de 30 minutos
-        const minutos = ahora.getMinutes();
-        const minutosRedondeados = minutos < 30 ? 30 : 60;
-        const horaMin = new Date(ahora);
-        
-        if (minutosRedondeados === 60) {
-          horaMin.setHours(horaMin.getHours() + 1, 0, 0, 0);
-        } else {
-          horaMin.setMinutes(minutosRedondeados, 0, 0);
-        }
-        
-        // Asegurar que no sea antes de las 11am
-        if (horaMin.getHours() < HORA_INICIO) {
-          return `${String(HORA_INICIO).padStart(2, '0')}:00`;
-        }
-        
-        return `${String(horaMin.getHours()).padStart(2, '0')}:${String(horaMin.getMinutes()).padStart(2, '0')}`;
-      }
-    }
-    return `${String(HORA_INICIO).padStart(2, '0')}:00`;
-  };
+  // getMinTime / getMaxTime no se usan directamente.
+  // (La generación real de horas disponibles se hace en generarHorasDisponibles().)
+  // const getMinTime = () => {};
 
-  // Función para obtener la hora máxima permitida (considerando duración del servicio)
-  const getMaxTime = () => {
-    const servicioSeleccionado = servicios.find(s => s.id === parseInt(servicioId));
-    if (!servicioSeleccionado) {
-      return `${String(HORA_FIN).padStart(2, '0')}:00`;
-    }
 
-    const duracionMinutos = servicioSeleccionado.duracion_min || 120;
-    const duracionHoras = Math.ceil(duracionMinutos / 60);
-    const horaMaximaInicio = HORA_FIN - duracionHoras;
-    
-    return `${String(horaMaximaInicio).padStart(2, '0')}:00`;
-  };
+
+  // getMaxTime no se usa directamente; la generación real de horas se hace en generarHorasDisponibles().
+  // const getMaxTime = () => {};
+
 
   // Función para combinar fecha y hora en formato datetime
   const combinarFechaHora = (fecha, hora) => {
@@ -152,7 +120,6 @@ const CitasForm = () => {
     
     // Determinar hora y minuto mínimos
     let horaMin = HORA_INICIO;
-    let minutoMin = 0;
     let empezarDesde30 = false;
     
     if (fechaInput === getMinDate()) {
@@ -162,16 +129,14 @@ const CitasForm = () => {
         if (minutos < 30) {
           // Si estamos antes de :30, empezar desde :30 de esta hora
           horaMin = ahora.getHours();
-          minutoMin = 30;
           empezarDesde30 = true;
         } else {
           // Si ya pasamos :30, empezar desde :00 de la siguiente hora
           horaMin = ahora.getHours() + 1;
-          minutoMin = 0;
+          empezarDesde30 = false;
         }
         if (horaMin < HORA_INICIO) {
           horaMin = HORA_INICIO;
-          minutoMin = 0;
           empezarDesde30 = false;
         }
       }
@@ -263,8 +228,8 @@ const CitasForm = () => {
 
     const fechaObj = new Date(fechaCompleta);
     const hora = fechaObj.getHours();
-    const minutos = fechaObj.getMinutes();
-    
+    // const minutos = fechaObj.getMinutes(); // no se usa (evita warning no-unused-vars)
+
     // Validar horario de atención
     if (hora < HORA_INICIO || hora >= HORA_FIN) {
       setError(`El horario de atención es de ${HORA_INICIO}:00 AM a ${HORA_FIN}:00 PM. Por favor, selecciona un horario dentro de este rango.`);
@@ -311,6 +276,7 @@ const CitasForm = () => {
     if (fechaInput && horaInput && !fecha) {
       const fechaCompleta = combinarFechaHora(fechaInput, horaInput);
       validarFechaHoraCompleta(fechaCompleta);
+      // validarFechaHoraCompleta ajusta "fecha" y "error"; si sigue vacío es porque no fue válido
       if (!fecha) {
         setError('Por favor, verifica que la fecha y hora sean válidas.');
         return;
@@ -321,57 +287,73 @@ const CitasForm = () => {
       setError('Por favor, completa todos los campos.');
       return;
     }
-    
+
     setError('');
 
     try {
-      // Obtener token si el usuario está autenticado
       const token = localStorage.getItem('token');
       const headers = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const servicioSeleccionado = servicios.find((s) => s.id === parseInt(servicioId));
+      const servicioNombre = servicioSeleccionado?.nombre || 'Servicio';
+      const duracionMin = servicioSeleccionado?.duracion_min || null;
+
+      const response = await axios.post(
+        'http://localhost:4000/api/citas',
+        {
+          nombre,
+          email,
+          fecha,
+          servicioId: parseInt(servicioId)
+        },
+        { headers }
+      );
+
+      const citaCreada = response?.data;
+
+      // Mensaje UX más claro (sin depender 100% del backend)
+      const fechaTexto = fecha
+        ? new Date(fecha).toLocaleString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        : '';
+
+      const estado = citaCreada?.estado || citaCreada?.status || 'pendiente';
+
+      let mensaje;
+      if (estado === 'confirmada') {
+        mensaje = `✅ ¡Tu cita ha sido confirmada!\n\n📅 ${fechaTexto}\n🛠️ ${servicioNombre}`;
+      } else if (estado === 'rechazada' || estado === 'cancelada') {
+        mensaje = `❌ No fue posible agendar esta cita (${estado}).\n\nPuedes intentar con otra fecha.`;
+      } else {
+        // pendiente / en revisión
+        const proximaAccion = 'te contactaremos por WhatsApp para confirmar detalles.';
+        mensaje = `⏳ ¡Cita enviada!\n\n📅 ${fechaTexto}\n🛠️ ${servicioNombre}${duracionMin ? ` (${duracionMin} min)` : ''}\n\n${proximaAccion}`;
       }
 
-      // Enviamos la cita al backend
-      // Si hay token, el backend usará automáticamente el email del usuario autenticado
-      await axios.post('http://localhost:4000/api/citas', {
-        nombre,
-        email,
-        fecha,
-        servicioId: parseInt(servicioId)
-      }, { headers });
-
-      alert('¡Tu cita ha sido agendada exitosamente!');
-      navigate('/'); 
-
+      alert(mensaje);
+      navigate('/');
     } catch (err) {
       console.error('Error al agendar:', err.response);
-      
-      // Manejo específico de errores del backend
+
       if (err.response) {
-        // Error 409 Conflict - Hora ocupada
         if (err.response.status === 409) {
           setError(err.response.data.error || 'Esta hora ya está ocupada. Por favor, selecciona otra fecha y hora.');
-        }
-        // Error 400 Bad Request - Datos inválidos
-        else if (err.response.status === 400) {
+        } else if (err.response.status === 400) {
           setError(err.response.data.error || 'Los datos proporcionados no son válidos. Por favor, verifica la información.');
-        }
-        // Otros errores con mensaje del backend
-        else if (err.response.data && err.response.data.error) {
+        } else if (err.response.data && err.response.data.error) {
           setError(err.response.data.error);
-        }
-        // Error sin mensaje específico
-        else {
+        } else {
           setError(`Error del servidor (${err.response.status}). Por favor, intenta nuevamente.`);
         }
-      } 
-      // Error de conexión
-      else if (err.request) {
+      } else if (err.request) {
         setError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
-      }
-      // Otro tipo de error
-      else {
+      } else {
         setError('Ocurrió un error inesperado. Por favor, intenta nuevamente.');
       }
     }

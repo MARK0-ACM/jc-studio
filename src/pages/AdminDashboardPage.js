@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import ServicesManager from '../components/Admin/ServicesManager';
 import PortfolioManager from '../components/Admin/PortfolioManager';
 import CitasManager from '../components/Admin/CitasManager';
+import PreguntasConsejosManager from '../components/Admin/PreguntasConsejosManager';
 import './AdminDashboardPage.css';
+
 
 
 const AdminDashboardPage = () => {
@@ -35,7 +37,14 @@ const AdminDashboardPage = () => {
         >
           📅 Citas
         </button>
+        <button 
+          className={`tab-button ${activeTab === 'preguntas-consejos' ? 'active' : ''}`}
+          onClick={() => setActiveTab('preguntas-consejos')}
+        >
+          📚 Preguntas y Consejos
+        </button>
       </div>
+
 
       {/* Contenido de las Pestañas */}
       <div className="admin-tab-content">
@@ -54,8 +63,14 @@ const AdminDashboardPage = () => {
             <CitasManager />
           </div>
         )}
+        {activeTab === 'preguntas-consejos' && (
+          <div className="tab-panel">
+            <PreguntasConsejosManager />
+          </div>
+        )}
       </div>
     </div>
+
   );
 };
 

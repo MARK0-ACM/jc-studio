@@ -26,13 +26,14 @@
    ============================================= */
 .hero {
   position: relative;
-  min-height: 74vh;
+  min-height: calc(var(--vh) * 74 / 100);
+
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   overflow: hidden;
-  background: var(--jc-black);
+  background: var(--jc-dark2);
 }
 
 .hero::before {

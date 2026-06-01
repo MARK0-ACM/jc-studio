@@ -57,6 +57,34 @@
   background-color: #2980b9;
 }
 
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.password-toggle:hover {
+  background: rgba(52, 152, 219, 0.10);
+}
+
 .error-message {
   color: #e74c3c; /* Rojo para errores */
   font-size: 0.9rem;

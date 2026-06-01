@@ -7,6 +7,7 @@ const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate(); // 3. Inicializar el hook de navegación
 
   // 4. Esta será la función de envío (handleSubmit) MODIFICADA
@@ -84,12 +85,22 @@ const LoginForm = () => {
         {/* Campo de Contraseña */}
         <div className="form-group">
           <label htmlFor="password">Contraseña:</label>
-          <input 
-            type="password" 
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              {showPassword ? '👁️' : '🙈'}
+            </button>
+          </div>
         </div>
 
         {error && <p className="error-message">{error}</p>}

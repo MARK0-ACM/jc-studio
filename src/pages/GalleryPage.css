@@ -16,7 +16,8 @@
 .gallery-page {
   font-family: 'DM Sans', sans-serif;
   background: var(--jc-black);
-  min-height: 100vh;
+  min-height: calc(var(--vh) * 100);
+
   color: var(--jc-white);
 }
 

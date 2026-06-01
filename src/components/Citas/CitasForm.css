@@ -24,7 +24,8 @@
   align-items: flex-start;
   padding: 60px 20px 80px;
   background: var(--jc-black);
-  min-height: 100vh;
+  min-height: calc(var(--vh) * 100);
+
   width: 100%;
   box-sizing: border-box;
   position: relative;

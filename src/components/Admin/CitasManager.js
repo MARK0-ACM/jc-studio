@@ -4,6 +4,10 @@ import './CitasManager.css';
 
 const CitasManager = () => {
   const [citas, setCitas] = useState([]);
+  const [toast, setToast] = useState(null);
+
+
+
   const [servicios, setServicios] = useState([]);
   const [form, setForm] = useState({
     nombre: '',
@@ -67,6 +71,12 @@ const CitasManager = () => {
     e.preventDefault();
     setError('');
 
+
+    // Si se agendó correctamente, notificar inmediatamente al admin (solo UI)
+    // Nota: el recordatorio por 1 hora / 30 min se hará con el cron/local timer.
+
+
+
     try {
       await axios.post(
         'http://localhost:4000/api/citas',
@@ -80,6 +90,15 @@ const CitasManager = () => {
       alert('Cita creada exitosamente');
       setForm({ nombre: '', email: '', fecha: '', servicioId: '' });
       fetchCitas();
+
+      // Notificación UI al admin: cita agendada (inmediata)
+      const msg = '✅ Cita agendada. El admin ya puede prepararse.';
+      setToast({ id: Date.now(), type: 'info', message: msg });
+      setTimeout(() => {
+        setToast((t) => (t && t.message === msg ? null : t));
+      }, 8000);
+
+
     } catch (err) {
       console.error(err);
       if (err.response) {
@@ -204,6 +223,10 @@ const CitasManager = () => {
   };
 
   const handleCambiarEstado = async (id, nuevoEstado) => {
+
+    // Si se rechaza/cancela o cambia, opcionalmente podríamos cancelar recordatorios,
+    // pero por ahora los recordatorios se disparan solo para citas futuras y se evita duplicar con localStorage.
+
     const citaSeleccionada = citas.find((c) => c.id === id);
 
     try {
@@ -229,8 +252,7 @@ const CitasManager = () => {
         const waTelefono = formatearTelefonoWhatsApp(telefono);
 
         if (waTelefono) {
-          const nombreCliente =
-            citaSeleccionada.cliente_nombre || citaSeleccionada.nombre || 'cliente';
+          const nombreCliente = citaSeleccionada.cliente_nombre || citaSeleccionada.nombre || 'cliente';
           const servicioNombre = obtenerNombreServicio(citaSeleccionada);
           const fechaTexto = formatearFecha(
             citaSeleccionada.fecha_hora ||
@@ -293,79 +315,84 @@ const CitasManager = () => {
     );
   }
 
-  // Limitar antigüedad en UI (aprox) para no mostrar demasiado viejo
-  const diasTTL = 90; // puedes ajustar
-  const umbral = new Date();
-  umbral.setDate(umbral.getDate() - diasTTL);
+  // Corte por fecha: futuras (>= ahora) vs historial (pasadas)
+  const ahora = new Date();
 
-  // Contadores
-  const contadores = {
-    todas: citas.filter((c) => {
-      const d = parseFechaCita(c);
-      if (d && d < umbral) return false;
-      return true;
-    }).length,
-    pendiente: citas.filter((c) => {
-      const d = parseFechaCita(c);
-      if (d && d < umbral) return false;
-      return obtenerEstado(c) === 'pendiente';
-    }).length,
-    confirmada: citas.filter((c) => {
-      const d = parseFechaCita(c);
-      if (d && d < umbral) return false;
-      return obtenerEstado(c) === 'confirmada';
-    }).length,
-    rechazada: citas.filter((c) => {
-      const d = parseFechaCita(c);
-      if (d && d < umbral) return false;
-      return obtenerEstado(c) === 'rechazada';
-    }).length
+  const isFuture = (cita) => {
+    const d = parseFechaCita(cita);
+    if (!d) return false;
+    return d.getTime() >= ahora.getTime();
   };
 
-  const citasFiltradasBase =
+  const isPast = (cita) => {
+    const d = parseFechaCita(cita);
+    if (!d) return false;
+    return d.getTime() < ahora.getTime();
+  };
+
+  // Contadores para la sección “Futuras (por atender)”
+  const contadores = {
+    todas: citas.filter((c) => isFuture(c)).length,
+    pendiente: citas.filter((c) => isFuture(c) && obtenerEstado(c) === 'pendiente').length,
+    confirmada: citas.filter((c) => isFuture(c) && obtenerEstado(c) === 'confirmada').length,
+    rechazada: citas.filter((c) => isFuture(c) && obtenerEstado(c) === 'rechazada').length,
+
+    historial: citas.filter((c) => isPast(c)).length
+  };
+
+  const citasFuturasBase =
     filtroEstado === 'todas'
-      ? citas
-      : citas.filter((cita) => obtenerEstado(cita) === filtroEstado);
+      ? citas.filter((c) => isFuture(c))
+      : citas.filter((c) => isFuture(c) && obtenerEstado(c) === filtroEstado);
+
+  const citasHistorialBase = citas.filter((c) => isPast(c));
 
   const term = normalizarTexto(busqueda);
   const fechaDesdeObj = fechaDesde ? new Date(`${fechaDesde}T00:00:00`) : null;
   const fechaHastaObj = fechaHasta ? new Date(`${fechaHasta}T23:59:59`) : null;
 
-  const citasFiltradas = citasFiltradasBase
-    .filter((cita) => {
-      const d = parseFechaCita(cita);
-      if (d && d < umbral) return false;
+  const filterAndSort = (lista, extraPastOrFutureFn) =>
+    lista
+      .filter((cita) => {
+        const d = parseFechaCita(cita);
+        if (!d) return false;
 
-      const texto = [
-        cita.cliente_nombre,
-        cita.nombre,
-        cita.nombre_cliente,
-        cita.cliente_email,
-        cita.email,
-        cita.correo,
-        cita.email_cliente,
-        cita.correo_cliente,
-        cita.cliente_telefono,
-        cita.telefono,
-        cita.telefono_cliente,
-        obtenerNombreServicio(cita)
-      ].join(' ');
+        if (extraPastOrFutureFn && !extraPastOrFutureFn(cita)) return false;
 
-      const matchBusqueda = !term || normalizarTexto(texto).includes(term);
-      if (!matchBusqueda) return false;
+        const texto = [
+          cita.cliente_nombre,
+          cita.nombre,
+          cita.nombre_cliente,
+          cita.cliente_email,
+          cita.email,
+          cita.correo,
+          cita.email_cliente,
+          cita.correo_cliente,
+          cita.cliente_telefono,
+          cita.telefono,
+          cita.telefono_cliente,
+          obtenerNombreServicio(cita)
+        ].join(' ');
 
-      if (d) {
+        const matchBusqueda = !term || normalizarTexto(texto).includes(term);
+        if (!matchBusqueda) return false;
+
         if (fechaDesdeObj && d < fechaDesdeObj) return false;
         if (fechaHastaObj && d > fechaHastaObj) return false;
-      }
 
-      return true;
-    })
-    .sort((a, b) => {
-      const da = parseFechaCita(a)?.getTime() ?? 0;
-      const db = parseFechaCita(b)?.getTime() ?? 0;
-      return ordenFecha === 'asc' ? da - db : db - da;
-    });
+        return true;
+      })
+      .sort((a, b) => {
+        const da = parseFechaCita(a)?.getTime() ?? 0;
+        const db = parseFechaCita(b)?.getTime() ?? 0;
+        return ordenFecha === 'asc' ? da - db : db - da;
+      });
+
+  // FUTURAS
+  const citasFuturasFiltradas = filterAndSort(citasFuturasBase);
+
+  // HISTORIAL
+  const citasHistorialFiltradas = filterAndSort(citasHistorialBase, isPast);
 
   const fechaToKey = (d) => {
     const dt = new Date(d);
@@ -378,19 +405,25 @@ const CitasManager = () => {
 
   const hoyKey = fechaToKey(new Date());
 
-  const citasHoy = citasFiltradas.filter((c) => {
+  const citasHoy = citasFuturasFiltradas.filter((c) => {
     const d = parseFechaCita(c);
     return d ? fechaToKey(d) === hoyKey : false;
   });
 
-  const citasTodasNormal = citasFiltradas.filter((c) => {
+  const citasFuturasTodasNormal = citasFuturasFiltradas.filter((c) => {
     const d = parseFechaCita(c);
     return d ? fechaToKey(d) !== hoyKey : false;
   });
 
   return (
     <div className="citas-manager">
+      {toast && (
+        <div className={`toast-admin toast-${toast.type || 'info'}`} role="status" aria-live="polite">
+          {toast.message}
+        </div>
+      )}
       <h3>Gestión de Citas</h3>
+
 
       <details className="admin-form-container">
         <summary className="form-summary">➕ Agregar Nueva Cita Manualmente</summary>
@@ -415,7 +448,13 @@ const CitasManager = () => {
           </div>
 
           <div className="form-row">
-            <input type="datetime-local" name="fecha" value={form.fecha} onChange={handleChange} required />
+            <input
+              type="datetime-local"
+              name="fecha"
+              value={form.fecha}
+              onChange={handleChange}
+              required
+            />
             <select name="servicioId" value={form.servicioId} onChange={handleChange} required>
               <option value="">Selecciona un servicio...</option>
               {servicios.map((servicio) => (
@@ -482,33 +521,51 @@ const CitasManager = () => {
           </button>
         </div>
 
-        <div className="citas-filtros-bottom">
-          <button className={`filtro-btn ${filtroEstado === 'todas' ? 'active' : ''}`} onClick={() => setFiltroEstado('todas')}>
-            Todas ({contadores.todas})
-          </button>
-          <button className={`filtro-btn ${filtroEstado === 'pendiente' ? 'active' : ''}`} onClick={() => setFiltroEstado('pendiente')}>
-            En Espera ({contadores.pendiente})
-          </button>
-          <button className={`filtro-btn ${filtroEstado === 'confirmada' ? 'active' : ''}`} onClick={() => setFiltroEstado('confirmada')}>
-            Confirmadas ({contadores.confirmada})
-          </button>
-          <button className={`filtro-btn ${filtroEstado === 'rechazada' ? 'active' : ''}`} onClick={() => setFiltroEstado('rechazada')}>
-            Rechazadas ({contadores.rechazada})
-          </button>
-        </div>
       </div>
 
       {/* LISTA */}
       <div className="citas-list">
-        <h4>
-         {/* {filtroEstado === 'todas' && `Todas las Citas (${citas.length})`} */}
-          {filtroEstado === 'pendiente' && `Citas en Espera (${contadores.pendiente})`}
-          {filtroEstado === 'confirmada' && `Citas Confirmadas (${contadores.confirmada})`}
-          {filtroEstado === 'rechazada' && `Citas Rechazadas (${contadores.rechazada})`}
-        </h4>
+        <div className="citas-list-tabs">
+          <button
+            type="button"
+            className={`filtro-btn ${filtroEstado === 'todas' ? 'active' : ''}`}
+            onClick={() => setFiltroEstado('todas')}
+          >
+            Todas ({contadores.todas})
+          </button>
+          <button
+            type="button"
+            className={`filtro-btn ${filtroEstado === 'pendiente' ? 'active' : ''}`}
+            onClick={() => setFiltroEstado('pendiente')}
+          >
+            En Espera ({contadores.pendiente})
+          </button>
+          <button
+            type="button"
+            className={`filtro-btn ${filtroEstado === 'confirmada' ? 'active' : ''}`}
+            onClick={() => setFiltroEstado('confirmada')}
+          >
+            Confirmadas ({contadores.confirmada})
+          </button>
+          <button
+            type="button"
+            className={`filtro-btn ${filtroEstado === 'rechazada' ? 'active' : ''}`}
+            onClick={() => setFiltroEstado('rechazada')}
+          >
+            Rechazadas ({contadores.rechazada})
+          </button>
+          <button
+            type="button"
+            className={`filtro-btn ${filtroEstado === 'historial' ? 'active' : ''}`}
+            onClick={() => setFiltroEstado('historial')}
+          >
+            Historial ({contadores.historial})
+          </button>
+        </div>
 
-        {citasFiltradas.length === 0 ? (
-          <p className="no-data">No hay citas en esta categoría.</p>
+        {/* FUTURAS */}
+        {citasFuturasFiltradas.length === 0 ? (
+          <p className="no-data">No hay citas futuras en esta categoría.</p>
         ) : (
           <>
             {/* Apartado Hoy */}
@@ -524,7 +581,11 @@ const CitasManager = () => {
                           <h4>{cita.cliente_nombre || cita.nombre || cita.nombre_cliente || 'Sin nombre'}</h4>
                           <div className="cita-badges">
                             <span className={`cita-estado estado-${estado}`}>
-                              {estado === 'pendiente' ? '⏳ En Espera' : estado === 'confirmada' ? '✅ Confirmada' : '❌ Rechazada'}
+                              {estado === 'pendiente'
+                                ? '⏳ En Espera'
+                                : estado === 'confirmada'
+                                  ? '✅ Confirmada'
+                                  : '❌ Rechazada'}
                             </span>
                             <span className="cita-id">#{cita.id}</span>
                           </div>
@@ -546,7 +607,14 @@ const CitasManager = () => {
                               'No especificado'}
                           </p>
                           <p>
-                            <strong>📅 Fecha:</strong> {formatearFecha(cita.fecha_hora || cita.fecha || cita.fecha_cita || cita.fecha_hora_cita || cita.fecha_agendada)}
+                            <strong>📅 Fecha:</strong>{' '}
+                            {formatearFecha(
+                              cita.fecha_hora ||
+                                cita.fecha ||
+                                cita.fecha_cita ||
+                                cita.fecha_hora_cita ||
+                                cita.fecha_agendada
+                            )}
                           </p>
                           <p>
                             <strong>💇 Servicio:</strong> {obtenerNombreServicio(cita)}
@@ -568,6 +636,7 @@ const CitasManager = () => {
                               🔄 Volver a Pendiente
                             </button>
                           )}
+
                           {estado === 'confirmada' || estado === 'rechazada' ? (
                             <button onClick={() => handleDelete(cita.id)} className="btn-delete">
                               🗑️ Eliminar
@@ -581,10 +650,10 @@ const CitasManager = () => {
               </>
             )}
 
-            {/* Apartado Todas */}
-            <h5 className="citas-dia-titulo">Todas</h5>
+            {/* Apartado Futuras (resto) */}
+            <h5 className="citas-dia-titulo">Todas (Futuras)</h5>
             <div className="citas-grid">
-              {citasTodasNormal.map((cita) => {
+              {citasFuturasTodasNormal.map((cita) => {
                 const estado = obtenerEstado(cita);
                 return (
                   <div key={cita.id} className={`cita-card cita-${estado}`}>
@@ -592,7 +661,11 @@ const CitasManager = () => {
                       <h4>{cita.cliente_nombre || cita.nombre || cita.nombre_cliente || 'Sin nombre'}</h4>
                       <div className="cita-badges">
                         <span className={`cita-estado estado-${estado}`}>
-                          {estado === 'pendiente' ? '⏳ En Espera' : estado === 'confirmada' ? '✅ Confirmada' : '❌ Rechazada'}
+                          {estado === 'pendiente'
+                            ? '⏳ En Espera'
+                            : estado === 'confirmada'
+                              ? '✅ Confirmada'
+                              : '❌ Rechazada'}
                         </span>
                         <span className="cita-id">#{cita.id}</span>
                       </div>
@@ -614,7 +687,14 @@ const CitasManager = () => {
                           'No especificado'}
                       </p>
                       <p>
-                        <strong>📅 Fecha:</strong> {formatearFecha(cita.fecha_hora || cita.fecha || cita.fecha_cita || cita.fecha_hora_cita || cita.fecha_agendada)}
+                        <strong>📅 Fecha:</strong>{' '}
+                        {formatearFecha(
+                          cita.fecha_hora ||
+                            cita.fecha ||
+                            cita.fecha_cita ||
+                            cita.fecha_hora_cita ||
+                            cita.fecha_agendada
+                        )}
                       </p>
                       <p>
                         <strong>💇 Servicio:</strong> {obtenerNombreServicio(cita)}
@@ -636,6 +716,7 @@ const CitasManager = () => {
                           🔄 Volver a Pendiente
                         </button>
                       )}
+
                       {estado === 'confirmada' || estado === 'rechazada' ? (
                         <button onClick={() => handleDelete(cita.id)} className="btn-delete">
                           🗑️ Eliminar
@@ -648,10 +729,81 @@ const CitasManager = () => {
             </div>
           </>
         )}
+
+        {/* HISTORIAL */}
+        {filtroEstado === 'historial' && (
+          <>
+            <h5 className="citas-dia-titulo" style={{ marginTop: 26 }}>
+              📜 Historial (pasadas)
+            </h5>
+            {citasHistorialFiltradas.length === 0 ? (
+              <p className="no-data">No hay citas pasadas en este rango.</p>
+            ) : (
+              <div className="citas-grid">
+                {citasHistorialFiltradas.map((cita) => {
+                  const estado = obtenerEstado(cita);
+                  return (
+                    <div key={cita.id} className={`cita-card cita-${estado}`}>
+                      <div className="cita-header">
+                        <h4>{cita.cliente_nombre || cita.nombre || cita.nombre_cliente || 'Sin nombre'}</h4>
+                        <div className="cita-badges">
+                          <span className={`cita-estado estado-${estado}`}>
+                            {estado === 'pendiente'
+                              ? '⏳ En Espera'
+                              : estado === 'confirmada'
+                                ? '✅ Confirmada'
+                                : '❌ Rechazada'}
+                          </span>
+                          <span className="cita-id">#{cita.id}</span>
+                        </div>
+                      </div>
+
+                      <div className="cita-info">
+                        <p>
+                          <strong>📞 Teléfono:</strong>{' '}
+                          {cita.cliente_telefono || cita.telefono || 'No registrado'}
+                        </p>
+                        <p>
+                          <strong>📧 Email:</strong>{' '}
+                          {cita.cliente_email ||
+                            cita.email ||
+                            cita.correo ||
+                            cita.email_cliente ||
+                            cita.correo_cliente ||
+                            (cita.cliente && cita.cliente.email) ||
+                            (cita.cliente && cita.cliente.correo) ||
+                            'No especificado'}
+                        </p>
+                        <p>
+                          <strong>📅 Fecha:</strong>{' '}
+                          {formatearFecha(
+                            cita.fecha_hora ||
+                              cita.fecha ||
+                              cita.fecha_cita ||
+                              cita.fecha_hora_cita ||
+                              cita.fecha_agendada
+                          )}
+                        </p>
+                        <p>
+                          <strong>💇 Servicio:</strong> {obtenerNombreServicio(cita)}
+                        </p>
+                      </div>
+
+                      <div className="cita-actions">
+                        <button onClick={() => handleDelete(cita.id)} className="btn-delete">
+                          🗑️ Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
 };
 
 export default CitasManager;
-

@@ -5,7 +5,8 @@
 
 .hero-section {
   position: relative;
-  min-height: 92vh;
+  min-height: calc(var(--vh) * 92 / 100);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,9 +241,10 @@
 /* Responsive */
 @media (max-width: 640px) {
   .hero-section {
-    min-height: 88vh;
+    min-height: calc(var(--vh) * 88 / 100);
     padding: 80px 0 60px;
   }
+
 
   .hero-stats {
     gap: 28px;

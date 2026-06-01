@@ -11,6 +11,8 @@ const RegisterForm = () => {
     confirmPassword: '',
     telefono: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
   const navigate = useNavigate();
@@ -124,31 +126,51 @@ const RegisterForm = () => {
         {/* Campo de Contraseña */}
         <div className="form-group">
           <label htmlFor="password">Contraseña:</label>
-          <input 
-            type="password" 
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Mínimo 6 caracteres"
-            required
-            minLength={6}
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Mínimo 6 caracteres"
+              required
+              minLength={6}
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              {showPassword ? '👁️' : '🙈'}
+            </button>
+          </div>
         </div>
 
         {/* Campo de Confirmar Contraseña */}
         <div className="form-group">
           <label htmlFor="confirmPassword">Confirmar Contraseña:</label>
-          <input 
-            type="password" 
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Repite tu contraseña"
-            required
-            minLength={6}
-          />
+          <div className="password-field">
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Repite tu contraseña"
+              required
+              minLength={6}
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowConfirmPassword((v) => !v)}
+              aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              {showConfirmPassword ? '👁️' : '🙈'}
+            </button>
+          </div>
         </div>
 
         {error && <p className="error-message">{error}</p>}

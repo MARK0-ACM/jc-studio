@@ -15,6 +15,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root {
+  --vh: 1vh; /* fallback si JS no corre */
+}
+
+
 .container {
   max-width: 1100px;
   margin: auto;

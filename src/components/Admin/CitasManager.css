@@ -398,8 +398,29 @@
   background-color: #c82333;
 }
 
+/* Toast / Notificaciones UI */
+.toast-admin{
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #f8f9fa;
+  color: #333;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(17,24,39,0.08);
+}
+
+.toast-info{ background: #eef2ff; border-color: rgba(99,102,241,0.35); color: #3730a3; }
+.toast-warning{ background: #fff7ed; border-color: rgba(245,158,11,0.35); color: #9a3412; }
+.toast-success{ background: #ecfdf5; border-color: rgba(16,185,129,0.35); color: #065f46; }
+.toast-danger{ background: #fef2f2; border-color: rgba(239,68,68,0.35); color: #991b1b; }
+
 /* Responsive */
 @media (max-width: 768px) {
+
   .cita-card {
     border-radius: 12px;
   }

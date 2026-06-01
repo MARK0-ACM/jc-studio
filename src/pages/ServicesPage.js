@@ -38,6 +38,8 @@ const ServicesPage = () => {
         <div className="services-eyebrow">Lo que ofrecemos</div>
         <h1>Nuestros Servicios</h1>
         <p>Calidad y estilo en cada detalle.</p>
+        <p>Toma en cuenta que los precios y tiempo varían en función 
+          del producto y el cliente </p>
       </header>
 
       {cargando ? (
