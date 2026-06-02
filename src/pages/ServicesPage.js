@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import './ServicesPage.css';
+import { apiUrl } from '../api';
 
 const ServicesPage = () => {
   const [servicios, setServicios] = useState([]);
@@ -10,7 +11,7 @@ const ServicesPage = () => {
   useEffect(() => {
     const fetchServicios = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/servicios');
+        const response = await axios.get(apiUrl('api/servicios'));
         setServicios(response.data);
       } catch (error) {
         console.error('Error al cargar servicios', error);

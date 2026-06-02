@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './PortfolioManager.css';
+import { apiUrl } from '../../api';
 
 const PortfolioManager = () => {
   const [items, setItems] = useState([]);
@@ -21,7 +22,7 @@ const PortfolioManager = () => {
 
   const fetchPortfolio = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/portafolio');
+      const response = await axios.get(apiUrl('api/portafolio'));
       setItems(response.data);
     } catch (err) {
       console.error('Error al cargar portafolio:', err);
@@ -64,7 +65,7 @@ const PortfolioManager = () => {
     setTitulo(item.titulo);
     setDescripcion(item.descripcion || '');
     setArchivo(null);
-    setPreview(`http://localhost:4000/uploads/${item.imagen_url}`);
+    setPreview(apiUrl(`uploads/${item.imagen_url}`));
     setError('');
     setShowForm(true);
   };
@@ -97,11 +98,11 @@ const PortfolioManager = () => {
 
     try {
       if (editingItem) {
-        await axios.put(`http://localhost:4000/api/portafolio/${editingItem.id}`, formData, {
+        await axios.put(apiUrl(`api/portafolio/${editingItem.id}`), formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       } else {
-        await axios.post('http://localhost:4000/api/portafolio', formData, {
+        await axios.post(apiUrl('api/portafolio'), formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
       }
@@ -127,7 +128,7 @@ const PortfolioManager = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/api/portafolio/${id}`);
+      await axios.delete(apiUrl(`api/portafolio/${id}`));
       setDeleteConfirm(null);
       fetchPortfolio();
     } catch (err) {
@@ -277,7 +278,7 @@ const PortfolioManager = () => {
             >
               <div className="pm-card-img-wrapper">
                 <img
-                  src={`http://localhost:4000/uploads/${item.imagen_url}`}
+                  src={apiUrl(`uploads/${item.imagen_url}`)}
                   alt={item.titulo}
                   className="pm-card-img"
                 />

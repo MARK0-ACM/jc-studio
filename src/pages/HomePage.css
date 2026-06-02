@@ -461,6 +461,14 @@
   background: var(--jc-dark2);
   border-top: 1px solid rgba(201,168,76,0.08);
 }
+h2{
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  color: var(--jc-white);
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
 
 .about-preview-section .section-lead {
   max-width: 720px;

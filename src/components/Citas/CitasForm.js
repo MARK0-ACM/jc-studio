@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './CitasForm.css';
+import { apiUrl } from '../../api';
 
 const CitasForm = () => {
   // Estados del formulario
@@ -27,7 +28,7 @@ const CitasForm = () => {
   useEffect(() => {
     const fetchServicios = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/servicios');
+        const response = await axios.get(apiUrl('api/servicios'));
         setServicios(response.data);
         setCargando(false);
       } catch (err) {
@@ -300,7 +301,7 @@ const CitasForm = () => {
       const duracionMin = servicioSeleccionado?.duracion_min || null;
 
       const response = await axios.post(
-        'http://localhost:4000/api/citas',
+        apiUrl('api/citas'),
         {
           nombre,
           email,

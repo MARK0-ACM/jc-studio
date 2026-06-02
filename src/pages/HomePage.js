@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './HomePage.css';
+import { apiUrl } from '../api';
 
 const HomePage = () => {
   const [fotosRecientes, setFotosRecientes] = useState([]);
@@ -10,10 +11,10 @@ const HomePage = () => {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const resFotos = await axios.get('http://localhost:4000/api/portafolio');
+        const resFotos = await axios.get(apiUrl('api/portafolio'));
         setFotosRecientes(resFotos.data.slice(0, 3));
 
-        const resServicios = await axios.get('http://localhost:4000/api/servicios');
+        const resServicios = await axios.get(apiUrl('api/servicios'));
         setServiciosDestacados(resServicios.data.slice(0, 3));
       } catch (error) {
         console.error('Error cargando datos del home', error);
@@ -96,7 +97,7 @@ const HomePage = () => {
           {fotosRecientes.map(foto => (
             <div key={foto.id} className="preview-card">
               <img
-                src={`http://localhost:4000/uploads/${foto.imagen_url}`}
+                src={apiUrl(`uploads/${foto.imagen_url}`)}
                 alt={foto.titulo}
               />
             </div>
@@ -111,7 +112,7 @@ const HomePage = () => {
       {/* ── QUIÉNES SOMOS / INFO RELEVANTE ── */}
       <section className="about-preview-section">
         <span className="section-eyebrow">Quiénes somos</span>
-        <h2>Tu confianza, nuestro compromiso</h2>
+        <h2>about-subtitleTu confianza, nuestro compromiso</h2>
         <p className="section-lead">
           En JC Studio combinamos técnica, asesoría personalizada y productos de alta calidad para ayudarte a lograr el look que buscas.
         </p>

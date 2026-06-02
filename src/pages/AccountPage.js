@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './AccountPage.css';
 
-const API_BASE = 'http://localhost:4000';
+import { API_BASE } from '../api';
 
 const AccountPage = () => {
   const [loading, setLoading] = useState(true);
@@ -71,8 +71,17 @@ const AccountPage = () => {
 
       setMessage('Datos actualizados correctamente.');
     } catch (err) {
-      setError(err?.response?.data?.error || 'Error actualizando datos.');
+      console.error('Error updating account:', err);
+      const status = err?.response?.status;
+      const apiError = err?.response?.data?.error;
+      const apiData = err?.response?.data;
+      setError(
+        apiError ||
+          `Error actualizando datos (status: ${status ?? '?'})` ||
+          (typeof apiData === 'string' ? apiData : 'Error actualizando datos.')
+      );
     }
+
   };
 
   const submitPassword = async (e) => {
@@ -93,8 +102,17 @@ const AccountPage = () => {
       setNewPassword('');
       setMessage('Contraseña actualizada correctamente.');
     } catch (err) {
-      setError(err?.response?.data?.error || 'Error actualizando contraseña.');
+      console.error('Error updating password:', err);
+      const status = err?.response?.status;
+      const apiError = err?.response?.data?.error;
+      const apiData = err?.response?.data;
+      setError(
+        apiError ||
+          `Error actualizando contraseña (status: ${status ?? '?'})` ||
+          (typeof apiData === 'string' ? apiData : 'Error actualizando contraseña.')
+      );
     }
+
   };
 
   if (loading) {

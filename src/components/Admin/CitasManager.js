@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './CitasManager.css';
+import { apiUrl } from '../../api';
+
 
 const CitasManager = () => {
   const [citas, setCitas] = useState([]);
@@ -40,7 +42,8 @@ const CitasManager = () => {
 
   const fetchCitas = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/citas', {
+      const response = await axios.get(apiUrl('api/citas'), {
+
         headers: getAuthHeaders()
       });
       setCitas(response.data || []);
@@ -54,7 +57,8 @@ const CitasManager = () => {
 
   const fetchServicios = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/servicios', {
+      const response = await axios.get(apiUrl('api/servicios'), {
+
         headers: getAuthHeaders()
       });
       setServicios(response.data || []);
@@ -79,7 +83,8 @@ const CitasManager = () => {
 
     try {
       await axios.post(
-        'http://localhost:4000/api/citas',
+        apiUrl('api/citas'),
+
         {
           ...form,
           servicioId: parseInt(form.servicioId)
@@ -117,7 +122,8 @@ const CitasManager = () => {
     if (!window.confirm('¿Estás seguro de eliminar esta cita?')) return;
 
     try {
-      await axios.delete(`http://localhost:4000/api/citas/${id}`, {
+      await axios.delete(apiUrl(`api/citas/${id}`), {
+
         headers: getAuthHeaders()
       });
       fetchCitas();
@@ -231,7 +237,7 @@ const CitasManager = () => {
 
     try {
       await axios.patch(
-        `http://localhost:4000/api/citas/${id}/estado`,
+        apiUrl(`api/citas/${id}/estado`),
         { estado: nuevoEstado },
         { headers: getAuthHeaders() }
       );
@@ -279,7 +285,7 @@ const CitasManager = () => {
 
       try {
         await axios.put(
-          `http://localhost:4000/api/citas/${id}/estado`,
+          apiUrl(`api/citas/${id}/estado`),
           { estado: nuevoEstado },
           { headers: getAuthHeaders() }
         );

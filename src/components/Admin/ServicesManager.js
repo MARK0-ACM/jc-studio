@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ServicesManager.css';
+import { apiUrl } from '../../api';
+
 
 const ServicesManager = () => {
   const [servicios, setServicios] = useState([]);
@@ -20,7 +22,7 @@ const ServicesManager = () => {
 
   const fetchServicios = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/servicios');
+      const response = await axios.get(apiUrl('api/servicios'));
       setServicios(response.data);
     } catch (err) {
       console.error('Error al cargar servicios:', err);
@@ -40,11 +42,11 @@ const ServicesManager = () => {
     try {
       if (editingId) {
         // MODO EDITAR (PUT)
-        await axios.put(`http://localhost:4000/api/servicios/${editingId}`, form);
+        await axios.put(apiUrl(`api/servicios/${editingId}`), form);
         alert('Servicio actualizado');
       } else {
         // MODO CREAR (POST)
-        await axios.post('http://localhost:4000/api/servicios', form);
+        await axios.post(apiUrl('api/servicios'), form);
         alert('Servicio creado');
       }
 
@@ -86,7 +88,7 @@ const ServicesManager = () => {
     if (!window.confirm('¿Estás seguro de eliminar este servicio?')) return;
 
     try {
-      await axios.delete(`http://localhost:4000/api/servicios/${id}`);
+      await axios.delete(apiUrl(`api/servicios/${id}`));
       fetchServicios(); // Recargar lista
     } catch (err) {
       console.error(err);

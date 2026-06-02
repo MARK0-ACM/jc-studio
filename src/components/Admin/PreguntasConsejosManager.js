@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import './PreguntasConsejosManager.css';
 
-const API = 'http://localhost:4000/api/preguntas-consejos';
+import { apiUrl } from '../../api';
+
+const API = apiUrl('api/preguntas-consejos');
 
 const PreguntasConsejosManager = () => {
   const [loading, setLoading] = useState(true);

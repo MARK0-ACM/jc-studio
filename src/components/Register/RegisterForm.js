@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import './RegisterForm.css';
+import { apiUrl } from '../../api';
+
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -50,7 +52,7 @@ const RegisterForm = () => {
 
     try {
       // Llamar al endpoint de registro
-      const response = await axios.post('http://localhost:4000/api/auth/register', {
+      await axios.post(apiUrl('api/auth/register'), {
         nombre: formData.nombre,
         email: formData.email,
         password: formData.password,

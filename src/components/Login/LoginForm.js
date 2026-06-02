@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios'; // 1. Importar axios
 import { useNavigate } from 'react-router-dom'; // 2. Importar useNavigate
 import './LoginForm.css';
+import { apiUrl } from '../../api';
+
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -24,7 +26,7 @@ const LoginForm = () => {
     try {
       // 5. ¡LA LLAMADA A LA API!
       // Llamamos a nuestro endpoint en el backend (localhost:4000)
-      const response = await axios.post('http://localhost:4000/api/auth/login', {
+      const response = await axios.post(apiUrl('api/auth/login'), {
         email: email,
         password: password
       });

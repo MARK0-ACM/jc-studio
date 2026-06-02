@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './MisCitasPage.css';
+import { apiUrl } from '../api';
 
 const MisCitasPage = () => {
   const [citas, setCitas] = useState([]);
@@ -23,7 +24,7 @@ const MisCitasPage = () => {
 
       // Hacer petición al backend con el token en el header
       // El backend filtra automáticamente: admin ve todas, cliente ve solo las suyas
-      const response = await axios.get('http://localhost:4000/api/citas', {
+      const response = await axios.get(apiUrl('api/citas'), { 
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -175,7 +176,7 @@ const MisCitasPage = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `http://localhost:4000/api/citas/${citaId}/cancelar`,
+        apiUrl(`api/citas/${citaId}/cancelar`),
         {},
         {
           headers: {

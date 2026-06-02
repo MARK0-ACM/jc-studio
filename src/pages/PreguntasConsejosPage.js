@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import './PreguntasConsejosPage.css';
+import { apiUrl } from '../api';
 
 const PreguntasConsejosPage = () => {
   const [zona, setZona] = useState('superior');
@@ -11,7 +12,7 @@ const PreguntasConsejosPage = () => {
     const cargar = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:4000/api/preguntas-consejos');
+        const res = await axios.get(apiUrl('api/preguntas-consejos'));
         setData(res.data || { zonas: [], faq: [], prepost: [] });
 
         // Garantizar que exista la zona seleccionada
