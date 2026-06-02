@@ -53,9 +53,12 @@ const AccountPage = () => {
           nombre: nombre.trim() || undefined,
           telefono: telefono.trim() || undefined,
           email: email.trim() || undefined,
+          // Si se cambia email, backend exige contraseña actual
+          currentPassword,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
 
       // Actualizar localStorage (usamos lo que tengamos en pantalla)
       const updated = {
@@ -121,8 +124,30 @@ const AccountPage = () => {
             <input value={email} type="email" onChange={(e) => setEmail(e.target.value)} placeholder="tu@email.com" />
           </label>
 
+          <label>
+            Contraseña actual (requerida si cambias el email)
+            <div className="password-field">
+              <input
+                value={currentPassword}
+                type={showCurrentPassword ? 'text' : 'password'}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowCurrentPassword((v) => !v)}
+                aria-label={showCurrentPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              >
+                {showCurrentPassword ? '👁️' : '🙈'}
+
+              </button>
+            </div>
+          </label>
+
           <button type="submit" className="btn-save">Guardar cambios</button>
         </form>
+
       </div>
 
       <div className="account-card">
